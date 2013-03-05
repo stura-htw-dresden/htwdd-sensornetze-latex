@@ -1,0 +1,22 @@
+\begin{table}[!t] % !t is important
+	%% increase table row spacing, adjust to taste
+	%\renewcommand{\arraystretch}{1.3}
+	\caption{An Example of a Table}
+	\label{table_example}
+	\centering
+	%% Some packages, such as MDW tools, offer better commands for making tables
+	%% than the plain LaTeX2e tabular which is used here.
+	\begin{tabular}{cc}
+	\toprule
+		\theadhll{Layer}	& \theadhll{Protocol}	\tabularnewline
+	\midrule
+		Application		& CoAP REST Engine (Erbium)	\tabularnewline
+		Transport		& UDP	\tabularnewline
+		Network			& IPv6, RPL(Routing)	\tabularnewline
+		Adaption		& 6LoWPAN	\tabularnewline
+		MAC			& CSMA	\tabularnewline
+		Radio Duty Cycling	& CXMAC, Lpp, ContikiMAC	\tabularnewline
+		Physical		& IEEE 802.15.4	\tabularnewline
+	\bottomrule
+	\end{tabular}
+\end{table}

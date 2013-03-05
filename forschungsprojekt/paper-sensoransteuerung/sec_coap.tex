@@ -1,0 +1,287 @@
+\section{Ansteuerung auf Anwendungsebene}
+\label{sec:coap}
+
+	In einem Hausautomatisierungssystem sollen Sensorinformationen
+	sowie Steuerbefehle für Aktoren übertragen werden.
+	Daher ist es erforderlich, auf den Netzknoten eine Anwendungsschicht
+	zu besitzen, die diese Informationen bzw. Befehle
+	versenden und empfangen kann.
+
+	An dieser Stelle geht es also nicht um die Umsetzung der genauen Befehle an
+	die Sensoren und Aktoren oder die Programmierabstraktion,
+	sondern um eine sinnvolle Abstraktion auf Netzwerkebene,
+	so dass andere Netzknoten alle nötigen Informationen zur
+	Weiterverarbeitung vorliegen haben.
+
+	Wichtige Informationen neben dem aktuellen Sensorwert
+	können Folgende sein:
+	\begin{itemize}
+	\item 	der Name des Sensors,
+	\item 	der Typ des Sensors (\zB Temperatur, Lichtintensität)
+	\item 	den möglichen Wertebereich,
+	\item 	Ungenauigkeiten.
+	\end{itemize}
+
+	Ein Temperatursensor liefert einen Temperaturwert im Bereich
+	von \unita{-40}{\celsius} bis \unita{+100}{\celsius}.
+	Dem Regelverarbeitungssystem genügt es unter Umständen,
+	dass nur (starke) Temperaturschwankungen aufgezeigt werden,
+	\zB durch das Öffnen eines Fensters an kalten Tagen.
+	Damit ist es überflüssig, dass jede Sekunde der Sensorwert
+	durch die Regelverarbeitung gepollt\footnote{\enquote{Pollen} bezieht sich
+		in diesem Abschnitt auf die Kommunikation zwischen
+		Regelverarbeitungsserver und Sensorknoten, nicht aber auf ein
+		Pollen zwischen Sensorknoten und Sensor.}
+	wird, da ein Fenster
+	an kalten Tagen nur selten geöffnet wird.
+
+	Das Pollen der Sensorwerte, also der Temperaturwerte,
+	bewirkt folglich ein Überfluten des Sensornetzes
+	mit \iA nicht benötigten Informationen.
+
+	Hierfür müssen Mechanismen zur Ansteuerung auf Anwendungsebene
+	bereitgestellt werden, die die Netzlast reduzieren und somit Energie
+	für die Übertragung und Auswertung der Nachrichten eingespart werden
+	kann.
+
+	Daneben gibt es auch Situationen, in denen eine Änderung der
+	Sensorinformation zeitkritisch verarbeitet werden muss,
+	das heißt, es kann nicht abgewartet werden, bis die Regelverarbeitung
+	das nächste Mal den Sensorwert pollt.
+	Hierzu muss der Regelverarbeitungsserver selbstständig
+	benachrichtigt werden, damit eine schnelle Abarbeitung erfolgen kann.
+
+\subsection{CoAP}
+	Ein Anwendungsprotokoll, dass die Anforderungen der Ansteuerung
+	auf Anwendungsebene erfüllen kann, ist CoAP. Es ist ein asynchrones
+	Protokoll, weshalb UDP als Transfer Protokoll ausreicht.  Da CoAP sich
+	noch in Entwicklung befindet, ist keine Kompatibilität zu vorherigen
+	Draft-Versionen sichergestellt.
+
+	Zum Zeitpunkt des Forschungsprojekts befand sich CoAP bei Draft-12 bzw.
+	-13. Die implementierten Draft-Versionen von CoAP waren meist auf
+	unterschiedlichen Ständen.  So bot Contiki 2.5 bei Projektbeginn nur
+	Draft-03. Nach Veröffentlichung von Contiki 2.6 war auch Draft-07
+	implementiert.
+	\autocite{kovatsch11low-power}
+	
+	Seitens des Hausautomatisierungsservers sah es ähnlich aus: Die
+	CoAP-Implementation auf dem Hausautomatisierungsserver (CoAPy) wurde
+	der Contiki-Version angepasst, um eine Kommunikation herzustellen.
+
+	Das Anwendungsprotokoll CoAP bietet verschiedene Vorteile
+	für die Hausautomatisierung im Allgemeinen und für die Ansteuerung
+	der Sensoren und Aktoren im Konkreten. Diese Vorteile werden
+	in den folgenden Abschnitten näher erläutert.
+
+	Weitere Informationen zu CoAP sind der Projektgruppe
+	\enquote{Steuerung des Systems} sowie im Speziellen zu Contiki
+	der Gruppe \enquote{Sensornetz-Kommunikation} zu entnehmen.
+
+\subsection{Kommunikationsbeispiele}
+	Mit dem Discovery Mechanismus von CoAP ist es möglich, die
+	Ressourcen des Sensorknotens zu erfahren.
+	Ein Sensorknoten mit dem Sensor SHT21 kann sowohl die Luftfeuchtigkeit
+	wie auch die Temperatur messen.
+	Damit können für diesen Sensorknoten zwei
+	REST-Ressourcen angelegt werden: \lstinline=sensor/sht21/temperature=
+	und \lstinline=sensor/sht21/humidity=.
+	Der Sensorknoten könnte aber auch noch andere Ressourcen bieten,
+	wie eine Einstellungsoption, die es erlaubt,
+	den Radio Duty Cycle zu verändern oder Einstellungen am SHT21
+	vorzunehmen.
+
+	Es können zwei grundsätzliche Verfahren unterschieden werden,
+	um auf ein Request, der an den Sensorknoten (CoAP-Server) gerichtet
+	ist, zu antworten:
+	\begin{LaTeXdescription}
+	\item[\normalfont\itshape Piggy-backed Response]
+		Bei einem Request wird zuerst der
+		Sensorwert ausgelesen und dann zusammen mit dem ACK
+		als Response übertragen werden. Hierbei wird der
+		Netzwerktraffic reduziert, erfordert aber eine schnelles
+		Auslesen des Sensorwertes.
+	\item[\normalfont\itshape Separate Response]
+		Die andere Möglichkeit ist es, sobald ein Request eingetroffen
+		ist, den Empfang mit einem ACK zu bestätigen.
+		Danach wird der Sensorwert erfasst und als Response zum
+		CoAP-Client geschickt, der dann den Empfang mit einem ACK
+		bestätigt.
+		\label{sec:coap:separateresponse}
+	\end{LaTeXdescription}
+
+	Den Zustand einer LED sollte folglich nur mit einem
+	\emph{Piggy-backed Response} beantwortet werden, um den Netzwerktraffic
+	gering zu halten.
+
+	Für das Auslesen des Feuchtigkeitssensors SHT21 wird je
+	nach \ItC-Bus-Geschwindigkeit etwa \unita{50}{\micro\second} benötigt.
+	Hier kann man je nach Anwendungsfall entscheiden, welche
+	Response-Methode besser ist.
+
+	Für den Lichtsensor TSL2561 eignet sich im Prinzip nur die zweite
+	Variante, denn dieser benötigt durchaus
+	\unita{400}{\milli\second} zum Messen der Lichtintensität.
+	Es gäbe zwar die Möglichkeit eine kürzere Messdauer einzustellen,
+	allerdings kann dadurch der Messfehler sich erhöhen.
+	Zur Beantwortung des Requests der aktuellen Lichtintensität
+	ist ein separates Response wichtig, denn der CoAP-Client
+	-- \idR ist dies der Regelverarbeitungsserver --
+	wird im Falle eines Piggy-backed-Response mehrere Requests losschicken,
+	da er davon ausgehen muss, dass die Nachricht nicht beim CoAP-Server
+	angekommen ist.
+
+	Bei zeitkritischen Ereignissen -- wie das Öffnen eines Fensters oder
+	der Wohnungstür -- möchte der CoAP-Client nicht ständig den
+	Sensorknoten pollen müssen. Daher bietet CoAP auch die Möglichkeit,
+	eine Ressource zu überwachen, das Observe-Feature.
+	Bei diesem Feature teilt ein CoAP-Client dem Sensorknoten mit, dass
+	der Client selbstständig informiert werden soll,
+	sobald sich der Zustand einer Ressource ändert.
+
+	In Contiki sind in der REST-Implementierung für dieses Observe-Feature
+	zwei Ressource-Typen zur Verfügung gestellt worden:
+	Der erste Typ ist eine periodische Ressource, die folglich periodisch
+	den Zustand der Ressource prüft und \idR nach Überschreiten eines
+	Schwellwertes eine Response-Nachricht an alle eingetragenen
+	CoAP-Clients verschickt. Damit kann das Sensornetz entlastet werden, da
+	nicht jeder Sensorwert übertragen wird.
+	Der andere Typ ist eine eventbasierte Ressource, die aufgrund des
+	Eintretens eines vorher definierten Events eine Response-Nachricht
+	ausgibt.  Das Event kann beispielsweise das Drücken eines Buttons sein
+	oder aber ein PUT-Request an eine andere Ressource.
+
+	Bezogen auf den Türkontaktsensor kann nun eine Eventressource angelegt
+	werden: Beim Öffnen der Tür wird dann der Sensorknoten per Interrupt
+	aus seiner Schlafphase erwachen und sofort eine CoAP-Nachricht
+	an alle eingetragenen CoAP-Clients verschicken, um anzuzeigen,
+	dass die Tür geöffnet wurde.
+
+
+\subsection{CoAP Schnittstelle}
+	Da ein paar Kommunikationsbeispiele genannt wurden, soll
+	nun die CoAP Schnittstelle in Contiki beispielhaft vorgestellt werden.
+
+	Die eventbasierte sowie die periodische Ressource werden hierbei nicht
+	als Quellcode vorgestellt, da die Möglichkeiten hierbei sehr vielfältig
+	sein können und dieses Observe-Feature noch nicht vollständig im
+	Projekt untersucht werden konnte.
+
+	Der REST Server kann in Contiki als
+	Prozess\footnote{Prozesse sind in Contiki Protothreads
+		\autocite{dunkels05using, dunkels06protothreads, dunkels07simplifying}}
+	gestartet werden.
+	Die Initialisierungsphase des Servers,
+	welche in \autoref{lst:restserverprocess} gezeigt ist,
+	erfolgt in drei Schritten:
+	\begin{enumerate}
+	\item 	Zuerst müssen alle Komponenten in den Ressourcen initialisiert werden,
+		sofern dies noch nicht geschehen ist.
+	\item 	Danach wird die REST Engine initialisiert und
+	\item 	zuletzt werden alle benötigten Ressourcen
+		aktiviert.
+	\end{enumerate}
+
+	% CoAP REST Server -- Listing
+	\lstinputlisting[style=float,language=c,%
+		label=lst:restserverprocess,%
+		caption={CoAP REST Serverprozess},%
+	]{listing/coap-server-process.c}
+
+	Damit Ressourcen aktiviert werden können, müssen diese zuvor
+	auch angelegt werden. In Contiki geschieht dies mit dem Makro
+	\lstinline=RESOURCE=. Der erste Parameter definiert den Namen
+	der Ressource, welcher zugleich auch im Handler vorkommt.
+	Der zweite Parameter kennzeichnet, welche \emph{REST-Method-Types}
+	von der Ressource unterstützt werden. Aus HTTP bekannte Method-Types
+	sind
+	\lstinline=METHOD_GET=,
+	\lstinline=METHOD_POST=,
+	\lstinline=METHOD_PUT=,
+	\lstinline=METHOD_DELETE=.
+	Auf eine Beschreibung wird an dieser Stelle verzichtet und auf die
+	Dokumentation von CoAP \autocite{kovatsch11low-power} verwiesen.
+	Der dritte Parameter gibt den URI-Pfad an und der letzte
+	die Attribute. Es besteht die Möglichkeit, eine Ressource
+	auch als Subressource zu definieren.
+
+	In \autoref{lst:rest_res_text} ist eine Text-Ressource gezeigt.
+	Dieser Ressource kann ein CoAP-Client eine Wunschlänge
+	per Query-Variable übergeben.
+
+	% CoAP REST Resource -- Text -- Listing
+	\lstinputlisting[style=float,language=c,%
+		label=lst:rest_res_text,%
+		caption={Text Ressource},%
+	]{listing/coap-server-res-text.c}
+
+	Bei einer einfachen Sensor-Ressource genügt die GET-Methode, so dass
+	ein Client die Ressource lediglich auslesen kann. Die Piggy-backed
+	Variante ist in \autoref{lst:rest_res_sensor} gezeigt.
+
+	% CoAP REST Resource -- Sensor -- Listing
+	\lstinputlisting[style=float,language=c,%
+		label=lst:rest_res_sensor,%
+		caption={Sensor Ressource},%
+	]{listing/coap-server-res-sensor.c}
+
+	Eine Erweiterung des in \autoref{lst:rest_res_sensor} gezeigten
+	Beispiels könnte die Einführung einer Query-Variable sein,
+	welche anzeigt, ob der Temperaturwert in Grad Celsius
+	oder Grad Fahrenheit übertragen werden soll. Hierzu sind keine zwei
+	Ressourcen notwendig.
+
+	Soll die Observe Funktion von CoAP genutzt werden, dann stehen hierzu
+	zwei weitere Ressource-Typen bereit, die die normale Ressource
+	erweitern: Die periodische sowie die eventbasierte Ressource.
+	Beide Ressourcetypen haben einen zusätzlichen Handler.
+	Ein CoAP-Client kann dieser Ressource überwachen und wird damit
+	in eine Liste aufgenommen.
+
+	In diesem Abschnitt wurde lediglich ein Einblick in die
+	CoAP-Schnittstelle gegeben. Die Implementation der CoAP-Funktionalität
+	ist in Contiki zweigeteilt: Die Ressourcen und die REST Engine
+	werden von einem \emph{Abstraction Layer} bereitgestellt, der sich
+	in Contiki \emph{Erbium} nennt und sich im Apps-Ordner befindet.
+	Dieser stellt die \emph{RESTful Web services} zur Verfügung.
+
+	Zur Kompilierzeit wird bestimmt, welche CoAP-Implementation genutzt
+	wird. Die Implementationen sind ebenfalls im Apps-Ordner von Contiki
+	zu finden: Es ist die Draft-Version 03 (er-coap-03)
+	und 07 (er-coap-07) implementiert.
+
+	Sowohl Abstraction Layer wie auch die beiden Draft-Implementationen
+	stammen vom selben Autor, Matthias Kovatsch. Ziel der Implementation
+	ist ein Low-Power-CoAP \autocite{kovatsch11low-power} für Contiki
+	bereitzustellen.
+
+\subsection{Zusammenhang zwischen CoAP und RDC}
+	Mit dem im vorherigen Absatz genannten Beispiel des Türkontaktsensors
+	kann man einen Zusammenhang zwischen CoAP und dem Radio Duty Cycle (RDC)
+	erkennen:
+
+	Angenommen, die Tür wird im Normalfall nur alle drei Monate einmal
+	geöffnet und der Sensorknoten arbeitet zuverlässig, so dass ein Ausfall
+	ausgeschlossen werden kann. Dann ist es nicht von Vorteil, dass der
+	RDC besagt, dass der Knoten alle \unita{8}{\hertz} aufwacht, um
+	empfangsbereit zu sein. Die hierfür benötigte Energie könnte durchaus
+	eingespart werden, so dass sich die Lebenszeit des Sensorknotens
+	drastisch erhöht. Der Nachteil ist natürlich, dass der Sensorknoten
+	während einer langen Zeit nicht erreichbar ist. Wenn man nur die
+	Zustände \enquote{offen} und \enquote{geschlossen} überträgt, könnte
+	der Fall eintreten, dass aufgrund eines Ausfalls oder anderer Gründe
+	der letzte Zustand nicht bekannt ist. Das nächste Update erfolgt
+	allerdings nicht in nächster Zeit.
+	
+	Hierfür bietet CoAP eine Lösung an: Man kann CoAP-Proxies verwenden,
+	die die Sensorwerte cachen und somit im Namen der schlafenden
+	Sensorknoten antworten können.
+
+	Wenn diese Idee weiterverfolgt wird, so erscheint es naheliegend,
+	auch einen unregelmäßigen RDC zu verwenden, wie im Falle
+	des Türkontaktsensors. Normalerweise wird in einem Sensornetz davon
+	ausgegangen, dass alle Netzknoten den gleichen RDC
+	besitzen. Eine vernünftige Zusammenarbeit von CoAP, dem Routing
+	Protokoll sowie dem RDC Protokoll kann bewirken,
+	dass verschiedene RDCs im gleichen Sensornetz
+	zum Einsatz kommen. Diese Theorie gilt es noch zu prüfen.

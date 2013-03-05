@@ -1,0 +1,262 @@
+\section{Konzepte der Ansteuerung in Contiki-OS}
+
+	Zielplattformen von Contiki-OS sind eingebettete,
+	batteriebetriebene Systeme, die über Funk (oder andere Netzwerke)
+	miteinander kommunizieren. \autocite{contiki, dunkels04contiki}
+
+	Contiki bietet eine Reihe von Modulen, die es für den Einsatz
+	in einem drahtlosen Sensornetz prädestiniert.
+	Für die Ansteuerung der Sensoren ist das Sensorinterface sehr
+	interessant, weshalb es näher beleuchtet wird.
+
+	Da im Sensorinterface die Sensoren physikalisch angesteuert werden
+	müssen und im Forschungsprojekt viele \ItC-Sensoren verwendet wurden,
+	wird ebenfalls ein \ItC-Interface und seine Eigenheiten betrachtet.
+
+	Bevor allerdings das Sensor- bzw. \ItC-Interface erläutert wird,
+	soll die Struktur von Contiki-OS \autocite{contikidoc} kurz vorgestellt werden,
+	um zu verstehen, wo sich welches Interface bzw. welche Implementation
+	befindet.
+
+\subsection{Struktur von Contiki-OS}
+	Da Contiki viele verschiedene Plattformen unterstützen möchte,
+	wird generischer Code von plattformabhängigem Code (strikt) getrennt.
+	Dabei gliedert sich Contiki in folgende Abschnitte:
+	\begin{LaTeXdescription}
+	\item[\normalfont\itshape core]
+		Der Kern von Contiki arbeitet \emph{plattformunabhängig}.
+		Der Netzwerk-Stack ist beispielsweise bis auf die Ansteuerung
+		des Funksensors komplett enthalten. Das Interface für die
+		Ansteuerung des Funksensors befindet sich aber wiederum
+		im Kern.
+	\item[\normalfont\itshape cpu]
+		In diesem Abschnitt befindet sich \emph{CPU-abhängiger Code}.
+		Es wird zwischen AVR, ARM und weiteren CPUs unterschieden.
+		Hier ist \iA die interfacebasierte physikalische Ansteuerung
+		implementiert, da Funktionalitäten des Mikrocontrollers genutzt
+		werden. Zugehörige Schnittstellen können sich im Kern befinden.
+	\item[\normalfont\itshape platform]
+		An dieser Stelle werden \emph{plattformspezifische
+		Eigenschaften}
+		umgesetzt. Vor allem befindet sich die Main-Methoden in diesem
+		Bereich. Eine Plattform kann auch für einen bestimmten
+		Mikrocontroller wie den ATmega128RFA1 stehen.
+	\item[\normalfont\itshape apps]
+		Wenn Funktionalitäten nicht im Kern benötigt werden und sie
+		dennoch plattformunabhängig sind, so kommen diese hier hin.
+		Die CoAP/REST-Implementierung befindet sich beispielsweise
+		hier, da es sich nur um eine Anwendungsschicht im
+		Netzwerk-Stack handelt.
+	\item[\normalfont\itshape examples / project]
+		Der letzte Bereich organisiert ein spezielles Projekt.
+		An dieser Stelle wird festgelegt, welche Plattform verwendet
+		wird und welche Prozesse automatisch gestartet werden.
+		Ein spezielles Projekt könnte ein Sensorknoten sein, welcher
+		Sensoren zum Auslesen der Raumtemperatur sowie der
+		Luftfeuchtigkeit bietet und diese Informationen über Funk
+		(6LoWPAN) verteilen kann.
+	\end{LaTeXdescription}
+
+
+\subsection{I2C-Interface}
+	Im Forschungsprojekt wurden vor allem Sensoren verwendet, die
+	eine interfacebasierte Ansteuerung über \ItC erlauben.
+
+	\ItC\footnote{\ItC wird im AVR Reference Manual \autocite{atmega128rfa1}
+		auch Two-Wire Interface (TWI) genannt.}
+	ist eine serielle Schnittstelle, die den Anschluss mehrerer
+	\ItC-Devices ermöglicht. So konnte sowohl ein Luftfeuchtigkeits-,
+	ein Druck-, ein Beschleunigungs- sowie ein Lichtsensor an einem Bus
+	angeschlossen werden. Am Mikrocontroller werden für \ItC nur zwei Pins
+	(\ItC-SCL, \ItC-SDA) benötigt. Der Mikrocontroller fungiert hierbei als
+	Master und leitet die Übertragung der Sensordaten ein.
+
+	In Contiki wurde kein \ItC-Interface gefunden. Da \ItC keine generische
+	Implementation aufgrund der Verwendung von Mikrocontroller-Komponenten
+	erlaubt, wurde ein eigenes \ItC-Interface in den Kern von Contiki
+	integriert. Eine zugehörige Implementation erfolgte dann im
+	CPU-abhängigen Teil von Contiki.
+
+	Dieses \ItC-Interface erlaubt die Verwendung des \ItC-Busses,
+	ohne detaillierte Kenntnisse zum Ablauf der Kommunikation zu haben.
+	Allerdings ist der Multi-Master-Betrieb nicht berücksichtigt worden,
+	da dieser für die Ansteuerung von Sensoren nicht benötigt wird.
+	Das Interface ist in \autoref{lst:i2c-interface} zu sehen und zeigt
+	die drei benötigten Funktionen zum Ansteuern eines Sensors
+	sowie die möglichen Übertragungsfehler.
+
+	% I2C-Interface -- Listing
+	\lstinputlisting[style=float,language=c,%
+		label=lst:i2c-interface,%
+		caption={Das \ItC-Interface (Ausschnitt)},%
+	]{listing/i2c-interface.h}
+
+	Die AVR-Implementation des \ItC-Interfaces benutzt den vorgesehenen
+	\ItC-Interrupt, um die Übertragung zügig abarbeiten zu können.
+	An welchem Pin sich der \ItC-Bus befindet, wird durch die AVR-Libc
+	bestimmt.
+
+	Die AVR-Implementation sieht nur eine synchrone Übertragung vor,
+	das heißt, dass das Betriebssystem so lange warten muss, bis die Übertragung
+	abgeschlossen oder ein Fehler aufgetreten ist. Durch die Verwendung
+	des \ItC-Interrupts wird die Übertragung sogar bevorzugt abgearbeitet
+	bzw. kann \idR nicht durch andere Interrupts unterbrochen werden.
+
+	\ItC-Sensoren können in Bezug auf das Übertragungsverhalten
+	in zwei Klassen eingeteilt werden:
+	Die ersten verwenden einen
+	Hold-Mode\footnote{Der Sensor \emph{hält} den \ItC-Bus während der
+		Messung des Sensorwertes, so dass die Kommunikation nicht
+		abgeschlossen oder eine andere nicht begonnen werden kann.
+		Der Feuchtigkeitssensor SHT21 unterstützt sowohl den Hold-
+		wie auch den No-Hold-Mode.}
+	und die anderen einen No-Hold-Mode.
+	
+	\begin{LaTeXdescription}
+	\item[\normalfont\itshape Hold-Mode]
+		Dieses synchrone Übertragungsverhalten hat bei \ItC-Sensoren,
+		die im so genannten Hold-Mode arbeiten, den Nachteil, dass
+		während des Messens des Sensorwertes der \ItC-Bus blockiert ist
+		und damit auch das Betriebssystem warten muss, bis die
+		Übertragung abgeschlossen ist.
+		
+		Insgesamt wird mehr Energie
+		verbraucht. Auf der anderen Seite werden keine Mechanismen
+		gebraucht, die anzeigen, dass eine Übertragung bereits
+		stattfindet.
+
+	\item[\normalfont\itshape No-Hold-Mode]
+		Die zweite Möglichkeit der Übertragung ist der No-Hold-Mode.
+		Bei diesem wird dem Sensor mitgeteilt, dass ein Sensorwert
+		gemessen werden soll. Der Mikrocontroller muss dann beim Sensor
+		nach einer gewissen Messdauer den Sensorwert abfragen (pollen),
+		sofern er bereits vorliegt.
+		
+		Viele Sensoren bieten für den No-Hold-Mode auch eine
+		Interrupt-Leitung an, die anzeigt, wann der neue Sensorwert
+		ausgemessen ist und somit abgefragt werden kann.
+
+		Auch hier ist das synchrone Übertragungsverhalten sinnvoll, da
+		der jeweilige Prozess die Übertragung einleitet und damit auch
+		sofort das Ergebnis der Übertragung vorliegen hat.  Nach einer
+		bestimmten Zeit oder beim Eintreten eines externen Interrupts
+		wird dann der Sensorwert abgerufen.
+	\end{LaTeXdescription}
+
+	Abschließend ist zu sagen, dass es ratsam ist,
+	zur Ansteuerung der \ItC-Sensoren ein Sensorinterface zu benutzen.
+	Mit diesem lassen sich dann alle konfigurierbaren Optionen einstellen,
+	wie den Hold- oder No-Hold-Mode.
+
+\subsection{Das generische Sensorinterface}
+
+	Contiki besitzt ein \emph{generisches} Sensorinterface, um Sensoren
+	ansteuern zu können. Damit ist eine Abstraktion geschaffen, die
+	die Entwickler der Sensortreiber dazu bewegen soll, ein einheitliches
+	Schema zu nutzen.
+	Entscheidend bei diesem Interface sind drei Funktionen:
+	\begin{itemize}
+	\item 	Die erste Funktion (\lstinline=configure=)
+		konfiguriert den Sensor;
+	\item 	die zweite (\lstinline=status=)
+		gibt Informationen zum Sensor zurück,
+		beispielsweise die konfigurierten Einstellungen
+		oder den Zustand des Sensors;
+	\item 	die dritte (\lstinline=value=)
+		kann die Sensorwerte auslesen,
+		beispielsweise den gemessenen Temperaturwert oder die
+		Lichtintensität.
+	\end{itemize}
+	Zusammen mit einen Namen für den Sensor bilden diese vier Bestandteile
+	den Sensortreiber.
+
+	Eine frühe Version des Interfaces erforderte weitere Funktionen
+	vom Sensortreiber: Hierunter war eine Initialisierungs-, 
+	Aktivierungs- und Deaktivierungsfunktion. Diese Funktionen können aber
+	durch die Konfiguration des Sensors übernommen werden,
+	weshalb sie aus dem Interface entfernt wurden.
+
+\subsubsection{Das Konfigurieren}
+	Die Funktion \lstinline=configure= dient dem Konfigurieren.
+	Sie besitzt zwei Parameter, wovon der erste den Konfigurationstyp
+	und der zweite den Konfigurationswert angibt.
+	Ein Rückgabewert kann anzeigen, ob die Konfiguration erfolgreich war.
+
+	Was bei einem Sensor konfiguriert werden kann und was sinnvoll
+	zu konfigurieren ist, muss jeder Sensortreiber für sich entscheiden.
+	Es gibt lediglich die Begrenzung, dass die beiden Parameter sowie 
+	der Rückgabewert Integers sind (und damit abhängig vom Mikrocontroller
+	durchaus unterschiedlich groß sein können).
+
+	Das Sensorinterface definiert globale Konfigurationstypen,
+	wovon der wichtigste \lstinline=SENSORS_ACTIVATE= ist.
+	Dieser sollte das Aktivieren und Deaktivieren des Sensortreibers
+	und sinnvoller Weise auch des Sensors bewirken.
+	Beispielsweise kann der Sensor mit Hilfe dieses
+	Konfigurationsparameters in den Sleep-Mode versetzt werden.
+
+\subsubsection{Der Auslesen der Status}
+	Die Funktion \lstinline=status= dient dem Auslesen der Status
+	eines Sensortreibers. Diese Funktion gibt den Status
+	als Rückgabewert zurück. Der gewünschte Status wird wie bei der
+	Konfiguration per Parameter übergeben. Es ist daher nicht undenkbar,
+	dass die beiden Parameter, Konfigurationstyp und Statustyp,
+	dieselben Wertigkeiten behandeln.
+
+	Auch hier ist es sehr zu empfehlen,
+	bei Übergabe von \lstinline=SENSORS_ACTIVATE= den Zustand des
+	Sensortreibers/Sensors zurückzugeben, wobei \enquote{0} bedeutet, dass
+	der Sensor aus ist. Eine \enquote{1} gibt die Aktivität des Sensors an.
+
+\subsubsection{Das Auslesen von Sensorinformationen}
+	Die Funktion \lstinline=value= bewirkt, dass Sensorinformationen
+	ausgelesen werden. Der übergebene Parameter kennzeichnet
+	den auszulesenden Sensorwert, beispielsweise einen Temperaturwert.
+
+	Da der Rückgabetyp vom Typ Integer\footnote{Ein Integer ist auf dem
+		ATmega128RFA1 nur \unita{8}{\bit} breit. Auf anderen Architekturen
+		kann ein Integer breiter sein.}
+	ist, ist es nicht möglich jeden beliebigen Sensorwert zurückzugeben.
+	Es gibt Sensorwerte, die einen größeren Wertebereich benötigten.
+	Ein Beispiel sind Temperaturwerte:
+	Da die Typen Float oder Double auf Mikrocontrollern so oft wie möglich
+	vermieden werden sollten, wird die Temperatur \unita{22.53}{\celsius}
+	typischerweise als ganze Zahl (\zB \(2253\)) übergeben -- was aber den
+	Wertebereich einer Integerzahl (0--255) auf dem ATmega128RFA1
+	überschreitet.
+
+	Hinzu kommt, dass ein fehlerhaftes Verhalten
+	ebenfalls im Rückgabewert eingebunden werden muss.
+	Ein durchaus oft auftretender Fehler bei batteriebetriebenen
+	Netzknoten resultiert aus einer zu niedrigen Betriebsspannung:
+	Der Mikrocontroller ATmega128RFA1 kann noch mit \unita{1.8}{\volt}
+	arbeiten, aber einige Sensoren wie der SHT21 stellen bei \unita{2.1}{\volt}
+	den Betrieb ein, so dass ein Auslesen des Sensorwerts zwangsweise
+	fehlschlagen wird.
+
+	Aus diesem Grund empfiehlt es sich, dass der Rückgabetyp kennzeichnet,
+	ob ein Fehler aufgetreten ist oder nicht. Bei bereits vorhandene
+	Sensorimplementationen wurde \enquote{0} für fehlerhaftes
+	sowie \enquote{1} für fehlerfreies Verhalten des Sensors verwendet.
+	Prinzipiell ist dieses (bisher) nicht festgelegt, so dass auch eine
+	\enquote{0} für fehlerfreies Verhalten stehen könnte und ein
+	von Null verschiedener Wert für den Fehlertyp.
+
+	Eigene Tests haben gezeigt, dass es sich empfiehlt, den Sensorwert im
+	Sensortreiber zwischenzuspeichern.  Dieses kann auch in einem
+	RAW-Format passieren, so dass erst das Auslesen des
+	zwischengespeicherten Sensorwerts diesen in das gewünschte Format
+	konvertiert.
+
+	Ein weiterer Vorteil ist es, dass der Sensortreiber alle
+	Sensorwerte intern in einer beliebigen Datenstruktur ablegen kann, so
+	dass auch historische Werte -- ggf. mit Zeitstempel -- abrufbar sind.
+	Der Sensortreiber stellt dann die benötigten Funktionen zum Auslesen
+	der Sensorwerte bereit.
+
+	Zur Zeit ist keine Abstraktion zum Übergeben des Sensorwertes vom
+	Sensorinterface zum Aufrufer vorgesehen.
+	Es wäre also interessant, ob solch eine Abstraktion in Bezug zur
+	Hausautomatisierung existiert und wie das vorhandene, generische
+	Sensorinterface erweitert werden kann, um die Anforderungen
+	der Ansteuerung auf Anwendungsebene zu erfüllen.

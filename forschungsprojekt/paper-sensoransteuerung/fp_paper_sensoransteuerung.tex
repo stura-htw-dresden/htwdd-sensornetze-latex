@@ -1,0 +1,138 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% filename:	contiki_paper.tex
+%% template:	Mon, 07 May 2012 13:01:14 +0200
+%% author:	Hermann Lorenz
+%% date:	26. Nov 2012 15:10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[%
+	journal, 	% document type (journal, technote, conference,
+			% 	peerreview, peerreviewca)
+	a4paper, 	% A4 Paper
+	%10pt, 		% Schriftgröße (9pt - 12pt)
+	final, 		% doc. mode (draft, draftcls, draftclsnofoot, final)
+	%oneside, 	% oneside, twoside
+	%twocolumn, 	% onecolumn, twocolumn
+	%compsoc, 	% IEEEtran mimics the format of the publications
+			% 	of the IEEE Computer Society
+	]{IEEEtran}
+% http://www.ctan.org/tex-archive/macros/latex/contrib/IEEEtran
+% Dort gibt es Latex-Beispiele
+
+\input{preambel}
+
+\makeatletter
+
+%% Workaround: Error message
+%%      Package babel Error: You haven't defined the language USENGLISH yet.
+%% or something similar
+\def\markboth#1#2{%
+	\def\leftmark{\@IEEEcompsoconly{\sffamily}#1}%
+	\def\rightmark{\@IEEEcompsoconly{\sffamily}#2}}
+
+\makeatother
+
+\newcommand{\projecttitle}{\emph{%
+	Überprüfung der Realisierbarkeit einer offenen
+	Hausautomatisierungslösung durch Anwendung bestehender
+	Informationstechnologien in einem Sensornetz}}
+
+
+\begin{document}
+	% IEEE Title and authors
+	\title{Ansteuerung von Sensoren und Aktoren in der Hausautomatisierung}
+	\author{%
+		Angelos~Drossos %
+		und~Hermann~Lorenz%
+		}
+
+	% IEEE Paper Headers: der 2. Parameter wird nur in zweiseitigen
+	% Dokumenten benötigt
+	\markboth{Hochschule für Technik und Wirtschaft Dresden, Master
+	Angewandte Informationstechnologien, Forschungsprojekt Sensornetze,
+	WS 2012/13}%
+	{A. Drossos \MakeLowercase{und} H. Lorenz: Ansteuerung von Sensoren und
+	Aktoren in der Hausautomatisierung}
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%\frontmatter
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%\input{titlepage}
+	
+	% Abstract (IEEE-compsoc-mode):
+	% Der Abstract befindet sich über dem zweispaltigen Text.
+	\IEEEtitleabstractindextext{\input{abstract}}
+
+	\maketitle
+
+	% display non tilte abstract index text
+	% Dieser Befehl versetzt den Abstract abhängig vom IEEE-mode an die
+	% richtige Stelle
+	\IEEEdisplaynontitleabstractindextext
+
+	%\section*{\pdfbookmark[1]{Abstract}{abstract}Abstract}
+	%\input{abstract_en}
+	%\vfill
+	%\section*{\pdfbookmark[1]{Zusammenfassung}{zusammenfassung}Zusammenfassung}
+	%\input{abstract_de}
+	%\vfill
+	%\thispagestyle{empty}
+
+	%\bgroup
+	%	\clearpage
+	%	\renewcommand{\clearpage}{\relax}
+		% Inhaltsverzeichnis
+	%	\tableofcontents
+
+		% Abbildungsverzeichnis
+	%	\listoffigures
+
+		% Tabellenverzeichnis
+	%	\listoftables
+	%\egroup
+
+	% Abkürzungsverzeichnis
+	%\input{acronym}
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%\mainmatter
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	% Gliederung
+
+	%\section{dafür suchen wir noch einen platz}
+	%In einer Hausautomatisierungslösung ist das Auslesen von
+	%Sensorinformationen und die Reaktion auf diese Informationen mit Hilfe
+	%von Aktoren nötig.  Diese Sensoren und Aktoren bilden üblicherweise
+	%Sensornetze.  Die Steuerungseinheit der Hausautomatisierung muss sich
+	%hierbei nicht im Sensornetz befinden, doch muss sie mit den Netzknoten
+	%des Sensornetzes kommunizieren können.
+
+	%Eine freie Hausautomatisierung hat die Förderung der
+	%\emph{Interoperabilität} zum Ziel. Daher ist eine Netzwerktechnologie
+	%wichtig, die standardisierte Protokolle zugrunde legt.
+	%Weitere Ziele sind geringe Installationskosten, ein überschaubarer
+	%Wartungsaufwand sowie eine einfach konfigurierbare Regelverarbeitung.
+
+
+	\input{sec_start}
+	\input{sec_ansteuerung}
+	\input{sec_contiki}
+	\input{sec_coap}
+
+	\input{sec_fazit}
+
+	\input{appendix}
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%\backmatter
+	% Literaturverzeichnis: biblatex
+	%\phantomsection
+	\printbibliography
+
+	%\pdfbookmark[1]{&\approx& ~Literaturverzeichnis}{toc}
+	
+	% Literaturverzeichnis: bibtex
+	%\bibliographystyle{alphadin}
+	%\bibliography{literature}
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}

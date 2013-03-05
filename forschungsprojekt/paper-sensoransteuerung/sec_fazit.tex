@@ -1,0 +1,24 @@
+\section{Ausblick}
+	Die durchgeführten exemplarischen Implementationen haben geholfen,
+	einen Überblick über die Möglichkeiten zur Anbindung von Sensoren
+	bzw. Aktoren unter Contiki zu entwickeln.  Dabei sind allerdings
+	verschiedene Probleme aufgetreten, die in nachfolgenden Arbeiten
+	untersucht und gelöst werden müssen:
+	\begin{itemize}
+	\item	Die Messungenauigkeiten des Analog-Digital-Wandlers des
+		ATmega128RFA1 sowie das ungewöhnliche Verhalten der
+		Interrupts 0 und 1, beides in \autoref{sec:anst:direkt}
+		beschrieben, müssen untersucht und gelöst werden.
+	\item	Die CoAP-Schnittstelle Contikis muss dahingehend untersucht
+		werden, wie die in \autoref{sec:coap} angesprochenen
+		eventbasierten und periodischen Ressourcen konkret umgesetzt
+		werden können.  Auch die Verwendung des Separate Response
+		unter Contiki muss getestet werden.
+	\item	Die Stromsparmechanismen von Contiki
+		\autocite{ritter05experimental, dunkels07softwarebased}
+		müssen genutzt werden.
+		Dazu sind unter anderem die Schlafmodi des ATmega128RFA1 zu
+		implementieren und ein Konzept zu entwickeln, wie die Prozesse
+		dem Betriebssystem mitteilen können, ob ein Schlafmodus
+		zulässig ist oder nicht.
+	\end{itemize}

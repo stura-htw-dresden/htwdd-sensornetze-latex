@@ -1,0 +1,24 @@
+\begin{figure}[!t]
+\centering
+\begin{circuitikz}[european resistors,node distance=0.3cm, european voltages]
+\coordinate (vcc) at (0,0);
+\coordinate (gnd) at (6,0);
+\coordinate (r1s) at (0,-1);
+\coordinate (between) at (3,-1);
+\coordinate (r2e) at (6,-1);
+
+\node [above of=vcc] {VCC};
+\node [above of=gnd] {GND};
+\draw (vcc)
+	to [short, *-] (r1s)
+	to [vR, l={\(R_1\)}] (between)
+	to [R, l={\(R_2 \mathop{=} \unita{1{,}97}{\kilo\ohm}\)}] (r2e)
+	to [short, -*] (gnd);
+
+%\draw (vcc) to [open, v^>={\(U_{\text{ges}\)}] (gnd);
+\draw (between)++(0,-.3cm) to [open, v_>={\(U_2\)}] ++(3cm,0);
+\draw (vcc) to [open, v^>={\(U_\text{ges} \mathop{=} \unita{3{,}18}{\volt}\)}] (gnd);
+\end{circuitikz}
+\caption{AD-Beschaltung}
+\label{fig:ad:beschaltung}
+\end{figure}

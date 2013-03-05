@@ -1,0 +1,72 @@
+% if have a single appendix:
+%\appendix[Proof of the Zonklar Equations]
+% or
+%\appendix  % for no appendix heading
+% do not use \section anymore after \appendix, only \section*
+% is possibly needed
+
+% use appendices with more than one appendix
+% then use \section to start each appendix
+% you must declare a \section before using any
+% \subsection or using \label (\appendices by itself
+% starts a section numbered zero.)
+%
+
+%\appendices
+\appendix[Vorlesung Sensornetze]
+
+%===========================================================
+% ....
+%===========================================================
+
+%\section{Vorlesung Sensornetze}
+
+	In der Vorlesung \emph{Sensornetze}
+	wurden Themen behandelt, die gewinnbringend in das Forschungsprojekt
+	einfließen konnten.
+	Folgende Themen waren für das Forschungsprojekt besonders interessant:
+	\begin{itemize}
+	\item 	Contiki-OS: Implementationsaspekte und Netzwerk-Stack
+	\item 	RPL (Routing Protocol Layer)
+	\item 	CoAP
+	\item 	HomeMatic
+	\item 	KNX
+	\end{itemize}
+	Zu diesen Themen wurden Vorträge gehalten und es wurden auch
+	Papers geschrieben, die über Prof. Vogt mit Zustimmung der jeweiligen
+	Authoren eingesehen werden können.
+
+
+%===========================================================
+% ....
+%===========================================================
+
+% you can choose not to have a title for an appendix
+% if you want by leaving the argument blank
+%\section{}
+
+%	Appendix two text goes here.
+
+%===========================================================
+% Acknowledgements
+%===========================================================
+
+% use section* for acknowledgement
+\ifCLASSOPTIONcompsoc
+  % The Computer Society usually uses the plural form
+  %\section*{Acknowledgments}
+  \section*{Danksagungen}
+\else
+  % regular IEEE prefers the singular form
+  %\section*{Acknowledgment}
+  \section*{Danksagung}
+\fi
+
+	Die Autoren wollen Prof. Dr.-Ing. Jörg Vogt für das Anbieten und Betreuen des
+	Forschungsprojektes \emph{Sensornetze} sowie den anderen Teilnehmern
+	für ihre Mitarbeit danken.
+	Es ist ein sehr interessantes Forschungsgebiet und wir wünschen
+	den noch verbleibenden sowie den neu hinzukommenden Teilnehmern
+	viel Spaß bei der Fortführung dieses Forschungsprojektes.
+	Für Fragen stehen wir gerne zur Verfügung.
+

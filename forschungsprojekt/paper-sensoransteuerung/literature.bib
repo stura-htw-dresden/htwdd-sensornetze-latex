@@ -1,0 +1,257 @@
+@electronic{contiki,
+	title = {Contiki},
+	subtitle = {{The Open Source OS for the {Internet of Things}}},
+	author = {{the Contiki project and its contributors}},
+	year = {2012},
+	url = {http://www.contiki-os.org/},
+	urldate = {2013-02-10},
+}
+@manual{contikidoc,
+	title = {{Contiki Documentation}},
+	url = {http://contiki.sourceforge.net/docs/2.6/},
+	urldate = {2013-02-09},
+	author = {{the Contiki project and its contributors}},
+	year = {2012},
+	version = {2.6},
+}
+@manual{atmega128rfa1,
+	title = {{ATmega128RFA1}},
+	organization = {{Atmel Corporation}},
+	month = {August},
+	year = {2011},
+	note = {Rev. 8266C-MCU Wireless-08/11},
+}
+@inproceedings{yazar09efficient,
+  title = {{Efficient Application Integration in IP-based
+                  Sensor Networks}},
+  author = {Dogan Yazar and Adam Dunkels},
+  booktitle = {Proceedings of ACM BuildSys 2009, the First ACM
+                  Workshop On Embedded Sensing Systems For
+                  Energy-Efficiency In Buildings},
+  month = nov,
+  year = 2009,
+  address = {Berkeley, CA, USA},
+  url = {http://dunkels.com/adam/yazar09efficient.pdf}
+}
+@inproceedings{dunkels07softwarebased,
+  title = {Software-based On-line Energy Estimation for Sensor
+                  Nodes},
+  author = {Adam Dunkels and Fredrik {\"Osterlind} and Nicolas
+                  Tsiftes and Zhitao He},
+  year = 2007,
+  month = jun,
+  address = {Cork, Ireland},
+  booktitle = {Proceedings of the Fourth Workshop on Embedded
+                  Networked Sensors (Emnets IV)},
+  url = {http://dunkels.com/adam/dunkels07softwarebased.pdf},
+  ppt = {http://dunkels.com/adam/slides/dunkels07softwarebased.ppt}
+}
+@inproceedings{dunkels06protothreads,
+  author = {Adam Dunkels and Oliver Schmidt and Thiemo Voigt and
+                  Muneeb Ali},
+  title = {Protothreads: Simplifying Event-Driven Programming
+                  of Memory-Constrained Embedded Systems},
+  booktitle = {Proceedings of the Fourth ACM Conference on Embedded
+                  Networked Sensor Systems (SenSys 2006)},
+  year = 2006,
+  month = nov,
+  address = {Boulder, Colorado, USA},
+  abstract = {Event-driven programming is a popular model for
+                  writing programs for tiny embedded systems and
+                  sensor network nodes. While event-driven programming
+                  can keep the memory overhead down, it enforces a
+                  state machine programming style which makes many
+                  programs difficult to write, maintain, and debug. We
+                  present a novel programming abstraction called
+                  protothreads that makes it possible to write
+                  event-driven programs in a thread-like style, with a
+                  memory overhead of only two bytes per
+                  protothread. We show that protothreads significantly
+                  reduce the complexity of a number of widely used
+                  programs previously written with event-driven state
+                  machines. For the examined programs the majority of
+                  the state machines could be entirely removed. In the
+                  other cases the number of states and transitions was
+                  drastically decreased. With protothreads the number
+                  of lines of code was reduced by one third. The
+                  execution time overhead of protothreads is on the
+                  order of a few processor cycles.},
+  url = {http://dunkels.com/adam/dunkels06protothreads.pdf},
+  ppt = {http://dunkels.com/adam/dunkels06protothreads.ppt}
+}
+@inproceedings{dunkels05using,
+  author = {Adam Dunkels and Oliver Schmidt and Thiemo Voigt},
+  title = {{Using Protothreads for Sensor Node Programming}},
+  booktitle = {Proceedings of the REALWSN'05 Workshop on Real-World
+                  Wireless Sensor Networks},
+  year = 2005,
+  month = jun,
+  address = {Stockholm, Sweden},
+  url = {http://dunkels.com/adam/dunkels05using.pdf},
+  ppt = {http://dunkels.com/adam/slides/protothreads-realwsn05.ppt}
+}
+@inproceedings{ritter05experimental,
+  author = {Hartmut Ritter and Jochen Schiller and Thiemo Voigt
+                  and Adam Dunkels and Juan Alonso},
+  title = {{Experimental Evaluation of Lifetime Bounds for
+                  Wireless Sensor Networks}},
+  year = 2005,
+  month = jan,
+  booktitle = {Proceedings of the Second European Workshop on
+                  Sensor Networks (EWSN2005)},
+  address = {Istanbul, Turkey},
+  abstract = {In this paper we present a method for experimental
+                  lifetime measurements of sensor networks. Despite
+                  the importance of experimental validation, none of
+                  the lifetime models proposed so far has been
+                  validated experimentally. One of the reasons for the
+                  absence of practical validations might be the long
+                  lifetime of batteries which make the validation of
+                  the proposed models non-trivial and time
+                  consuming. Our solution enables validation of
+                  lifetime models within a reasonable amount of
+                  time. We also use our method to validate a simple
+                  mathematical model that provides bounds on the
+                  lifetime of sensor networks.},
+  url = {http://dunkels.com/adam/ewsn2005.pdf}
+}
+@inproceedings{dunkels04contiki,
+  author = {Adam Dunkels and {Bj\"orn} {Gr\"onvall} and Thiemo Voigt},
+  title = {Contiki - a Lightweight and Flexible Operating
+                  System for Tiny Networked Sensors},
+  year = 2004,
+  month = nov,
+  booktitle = {Proceedings of the First IEEE Workshop on Embedded
+                  Networked Sensors (Emnets-I)},
+  address = {Tampa, Florida, USA},
+  url = {http://dunkels.com/adam/dunkels04contiki.pdf},
+  abstract = {Wireless sensor networks are composed of large
+                  numbers of tiny networked devices that communicate
+                  untethered. For large scale networks it is important
+                  to be able to dynamically download code into the
+                  network. In this paper we present Contiki, a
+                  lightweight operating system with support for
+                  dynamic loading and replacement of individual
+                  programs and services. Contiki is built around an
+                  event-driven kernel but provides optional preemptive
+                  multithreading that can be applied to individual
+                  processes. We show that dynamic loading and
+                  unloading is feasible in a resource constrained
+                  environment, while keeping the base system
+                  lightweight and compact.},
+  ppt = {http://dunkels.com/adam/slides/contiki-emnets.ppt}
+}
+@inproceedings{dunkels04connecting,
+  author = {Adam Dunkels and Thiemo Voigt and Juan Alonso and
+                  Hartmut Ritter and Jochen Schiller},
+  title = {{Connecting Wireless Sensornets with TCP/IP
+                  Networks}},
+  year = 2004,
+  month = feb,
+  address = {Frankfurt (Oder), Germany},
+  booktitle = {Proceedings of the Second International Conference
+                  on Wired/Wireless Internet Communications
+                  (WWIC2004)},
+  abstract = {{Wireless sensor networks are based on the
+                  collaborative efforts of many small wireless sensor
+                  nodes, which collectively are able to form networks
+                  through which sensor information can be
+                  gathered. Such networks usually cannot operate in
+                  complete isolation, but must be connected to an
+                  external network to which monitoring and controlling
+                  entities are connected. As TCP/IP, the Internet
+                  protocol suite, has become the de-facto standard for
+                  large-scale networking, it is interesting to be able
+                  to connect sensornets to TCP/IP networks. In this
+                  paper, we discuss three different ways to connect
+                  sensor networks with TCP/IP networks: proxy
+                  architectures, DTN overlays, and TCP/IP for sensor
+                  networks. We conclude that the methods are in some
+                  senses orthogonal and that combinations are
+                  possible, but that TCP/IP for sensor networks
+                  currently has a number of issues that require
+                  further research before TCP/IP can be a viable
+                  protocol family for sensor networking. }},
+  url = {http://dunkels.com/adam/wwic2004.pdf},
+  note = {(C) Copyright 2004 Springer
+                  Verlag. http://www.springer.de/comp/lncs/index.html}
+}
+@phdthesis{dunkels07programming,
+  author = {Adam Dunkels},
+  title = {{Programming Memory-Constrained Networked Embedded
+                  Systems}},
+  month = feb,
+  year = 2007,
+  school = {Swedish Institute of Computer Science},
+  number = 47,
+  url = {http://dunkels.com/adam/dunkels07programming.pdf},
+  ppt = {http://dunkels.com/adam/slides/dunkels07programming.ppt}
+}
+@inproceedings{kovatsch11low-power,
+  title = {{A Low-power CoAP for Contiki}},
+  author = {Matthias Kovatsch and Simon Duquennoy and Adam
+                  Dunkels},
+  booktitle = {Proceedings of the IEEE Workshop on Internet of
+                  Things Technology and Architectures},
+  year = 2011,
+  month = oct,
+  address = {Valencia, Spain},
+  url = {http://dunkels.com/adam/kovatsch11low-power.pdf}
+}
+@inproceedings{finne10improving,
+  title = {Improving Sensornet Performance by Separating System
+                  Configuration from System Logic},
+  author = {Niclas Finne and Joakim Eriksson and Nicolas Tsiftes
+                  and Thiemo Voigt and Adam Dunkels},
+  booktitle = {Proceedings of the 7th European Conference on
+                  Wireless Sensor Networks},
+  day = {17--19},
+  month = feb,
+  year = 2010,
+  address = {Coimbra, Portugal}
+}
+@misc{dunkels08ipso,
+  author = {Adam Dunkels and Jean-Philippe Vasseur},
+  title = {{IP for Smart Objects}},
+  note = {IPSO Alliance White Paper \#1},
+  url = {http://dunkels.com/adam/dunkels08ipso.pdf},
+  year = 2008,
+  month = sep,
+  abstract = {The emerging application space for smart objects
+                  requires scalable and interoperable communication
+                  mechanisms that support future innovation as the
+                  application space grows. IP has proven itself a
+                  long-lived, stable, and highly scalable
+                  communication technology that supports both a wide
+                  range of applications, devices, and underlying
+                  communication technologies. The IP stack is
+                  lightweight and runs on tiny, battery operated
+                  embedded devices. IP therefore has all the qualities
+                  to make `The Internet of Things' a reality,
+                  connecting billions of communicating devices.}
+}
+@misc{dunkels04ercim,
+  author = {Adam Dunkels and Thiemo Voigt and Juan Alonso},
+  title = {Connecting Wireless Sensor Networks with the
+                  Internet},
+  howpublished = {{ERCIM News}},
+  number = 57,
+  month = apr,
+  year = 2004,
+  url = {http://www.ercim.org/publication/Ercim_News/enw57/dunkels.html},
+  abstract = {Wireless sensor networks enable numerous advanced
+                  monitoring and control applications. In this project
+                  scientists at SICS are connecting sensor networks
+                  with the Internet.}
+}
+@inproceedings{dunkels07simplifying,
+  author = {Adam Dunkels and Oliver Schmidt and Thiemo Voigt and
+                  Muneeb Ali},
+  title = {Simplifying Memory-Constrained Event-Driven Programming
+                  with Contiki's Protothreads},
+  booktitle = {Proceedings of Real-Time in Sweden 2007},
+  year = 2007,
+  month = aug,
+  address = {Västerås, Sweden}
+}
+

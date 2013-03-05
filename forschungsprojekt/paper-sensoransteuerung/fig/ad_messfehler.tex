@@ -1,0 +1,45 @@
+\begin{figure}[!t]
+\centering
+\begin{tikzpicture}
+%Achsen:
+%\draw[->] (0,0) -- coordinate (xachse) (6,0);
+%\draw[->] (0,0) -- coordinate (yachse) (0,6);
+
+%\draw plot[scale=1/128, mark=*, mark options={fill=white}] file{dat/ad_messwerte_calc.dat};
+
+\datavisualization [scientific axes,
+	x axis={min value=0,
+		max value=1.6,
+		length=5cm,
+		ticks={step=0.4, minor steps between steps=1},
+		label={\(U_\text{anliegend}\) in \volt}},
+	y axis={min value=0,
+		max value=6,
+		length=3cm,
+		ticks={step=2, minor steps between steps=1},
+		label={erwartet \(-\) gemessen}},
+	all axes={grid},
+	visualize as scatter]
+	data {
+		x,	y
+		0.0505454252,	1
+		0.0910023242,	2
+		0.1360095528,	2
+		0.1695885219,	1
+		0.2426258714,	2
+		0.3141725176,	2
+		0.3468770764,	2
+		0.516029654,	2
+		0.5960608944,	3
+		0.7990561224,	3
+		0.8848305085,	4
+		1.0202931596,	4
+		1.170953271,	4
+		1.2681376518,	4
+		1.2967501552,	5
+		1.3536300778,	5
+		};
+\end{tikzpicture}
+\caption{Differenz zwischen Erwartungs- und Messwerten nach \protect\autoref{tbl:ad:messfehler}}
+\label{fig:ad:messfehler}
+\end{figure}

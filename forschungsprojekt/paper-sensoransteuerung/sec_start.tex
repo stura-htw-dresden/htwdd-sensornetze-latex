@@ -1,0 +1,127 @@
+\section{Einführung}
+%\subsection{Themengebiet}
+	Die Hausautomatisierung ist ein Teilgebiet der Gebäudeautomatisierung.
+	Ein primäres Ziel der Hausautomatisierung ist die finanzielle
+	Einsparung, \zB durch intelligente Heizsysteme.
+	Zusätzlich soll sie aber auch die Bequemlichkeit der Bewohner fördern.
+
+	Im Bereich der Hausautomatisierung gibt es bereits eine Vielzahl an
+	sowohl offenen als auch proprietären Lösungsansätzen.  Jedoch
+	erfüllen sie die Bedingungen an eine freie und erweiterbare
+	Hausautomatisierungslösung nur bedingt.
+
+	Offene Varianten sind häufig \enquote{Ein-Mann}-Projekte, die
+	sehr spezielle Probleme verfolgen oder nur sehr unzureichend
+	dokumentiert sind.  Teilweise stützen sie sich aber auch nur darauf,
+	vorhandene proprietäre Systeme zu verwalten und miteinander zu
+	verbinden.
+
+	Diese proprietären Systeme sind für Fremdanbieter häufig aufgrund hoher
+	Lizenzkosten unattraktiv.  Des Weiteren setzen sie Netzwerkprotokolle
+	ein, die energieeffizienter als standardisierte Protokolle wie HTTP, TCP
+	und IPv6 arbeiten. Die Protokolle stehen aber durch ihre Geschlossenheit
+	der Interoperabilität entgegen.
+
+
+	Diese Probleme begründen die Notwendigkeit des hier vorangetriebenen
+	Projektes.
+
+\subsection{Projektziele}
+	Im Rahmen des Forschungsprojektes \emph{Sensornetze} an der HTW Dresden,
+	geleitet durch Prof. Dr.-Ing. Jörg Vogt, soll überprüft werden, inwiefern
+	eine offene Heimautomatisierung durch Anwendung bestehender
+	Informationstechnologien in einem Sensornetzwerk realisierbar ist.
+
+	Dabei sind für die Konzipierung im Rahmen unseres Forschungsprojektes
+	die folgenden Zielstellungen erarbeitet worden:
+	\begin{itemize}
+	\item 	Es sollen nur quelloffene und freie Module verwendet werden.
+		Dabei ist \enquote{frei} im Sinne der Definition der Free
+		Software Foundation zu sehen.
+	\item	Das Nutzen existierender, energieeffizienter
+		Standardtechnologien \autocite{dunkels04ercim, dunkels08ipso}
+		bilden die Grundlage für die
+		\emph{Interoperabilität} (Herstellerunabhängigkeit) sowie
+		die Langlebigkeit batteriebetriebener Sensorknoten.
+	\item 	Die Erweiterbarkeit des Hausautomatisierungssystems
+		und damit die Integration anderer -- auch proprietärer --
+		Sensornetze ist zu untersuchen.
+	\item 	Es ist wünschenswert, dass neue Geräte sich möglichst
+		automatisch im System anmelden. Der Ausfall einzelner
+		Sensorknoten darf das System nicht gefährden.
+		Somit ist eine Skalierbarkeit des Hausautomatisierungssystems
+		von Nöten.
+	\end{itemize}
+
+\subsection{Projektansatz}
+	Die konkret untersuchte Hausautomatisierungslösung besteht aus
+	einem dedizierten Netzknoten (Server), der die Regelung des Systems
+	übernimmt.
+	Auf diesem befindet sich folglich auch die Regelverarbeitung.
+
+	Das Sensornetz soll auf dem Funkstandard 6LoWPAN basieren.
+	Als Sensorknoten sollen ATmega128RFA1-Mikrocontroller mit dem
+	Betriebssystem Contiki-OS eingesetzt werden.
+
+	Der Informationsaustausch zwischen den einzelnen Sensorknoten und dem
+	Server soll über das Constrained Application Protocol (CoAP) realisiert
+	werden.
+	CoAP ist ein im Vergleich zu HTTP energieeffizientes Protokoll, welches
+	dennoch URIs unterstützt.
+
+	Bestehende Sensornetze, wie FS20 oder HomeMatic,
+	werden mit Hilfe von Gateways integriert,
+	welche ein Mapping zwischen dem entsprechenden Sensornetzprotokoll
+	und CoAP durchführen.
+
+\subsection{Projekteinteilung}
+	Zur Konzipierung der offenen Hausautomatisierung wurde
+	das Projekt in folgende Teilprojekte gegliedert:
+	\subsubsection{Steuerung des Systems}
+		Es gilt zu untersuchen, ob ein zentraler oder dezentraler
+		Hausautomatisierungsansatz in Hinblick auf die Bedürfnisse
+		der Nutzer des Systems sinnvoll ist. Danach ist
+		die Steuerung des Systems zu entwickeln
+		und ein Anwendungsprotokoll zu finden, das sowohl im Sensornetz
+		als auch auf normalen Computern eingesetzt werden kann.
+	\subsubsection{Regelverarbeitung}
+		Sofern die Steuerung des Systems definiert ist, kann
+		mit der Regelverarbeitung begonnen werden.
+		Hierbei sind die Fähigkeiten verschiedener Nutzer
+		besonders zu berücksichtigen und eine einfach konfigurierbare
+		Regelverarbeitung zu finden.
+	\subsubsection{Sensornetz-Kommunikation}
+		Neben der Steuerung muss die Kommunikation im Sensornetz
+		analysiert werden und es muss ein Netzwerkstack gefunden
+		werden, der sowohl die Anforderungen an das
+		Hausautomatisierungssystems erfüllt
+		wie auch diejenigen Anforderungen an
+		\emph{Tiny-Networked-Sensors} \autocite{dunkels04contiki}.
+	\subsubsection{Sensoransteuerung}
+		\label{sec:teilprojekt}
+		Um im Netzwerk Sensordaten auswerten zu können, muss untersucht
+		werden, wie Sensoren und Aktoren auf dem im Ansatz beschriebenen
+		Sensorknoten angesteuert und an die CoAP-Schnittstelle
+		weitergeleitet werden können.
+	\subsubsection{Integration bestehender Sensornetze}
+		Wie in den Zielstellungen definiert, sollen grundsätzlich
+		bestehende Sensornetze verwendet werden können.
+		Beispielhaft wurden hierbei FS20- und HomeMatic-Geräte in das
+		Hausautomatisierungssystem eingebunden.
+
+\subsection{Dokumentabgrenzung}
+	Dieses Dokument soll sich lediglich mit dem Teilprojekt der
+	Sensoransteuerung beschäftigen.
+	
+	Dabei soll dargestellt werden, welche Möglichkeiten zur
+	Ansteuerung der Peripherie existieren.	Des Weiteren sollen die
+	Möglichkeiten unter Contiki untersucht werden und die Auswirkungen
+	auf das Kommunikationsverhalten des Sensorknotens dargestellt werden.
+
+	Der Einsatz von CoAP als Kommunikationsprotokoll wird dabei nicht
+	detailliert untersucht. Es wird jedoch als Rahmenbedingung für den
+	Einsatzzweck herangezogen.
+
+	Durch den Einsatz der batteriebetriebenen ATmega128RFA1-Mikrocontroller
+	als Sensorknoten müssen insbesondere die knappen Ressourcen Speicher und
+	Energie beachtet werden.

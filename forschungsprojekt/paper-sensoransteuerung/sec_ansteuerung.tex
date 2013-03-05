@@ -1,0 +1,139 @@
+\section{Physikalische Ansteuerung}
+
+
+%===============================================================================
+	Die Ansteuerung der Sensoren kann in zwei grundsätzliche Klassen
+	eingeteilt werden:
+	\begin{LaTeXdescription}
+	\item[\normalfont\itshape direkt]
+		Der Sensor liefert eine durch den Mikrocontroller messbare
+		elektrische Größe.  So wird bei einem Schalter durch einen
+		Flankenwechsel ein Interrupt ausgelöst oder ein regelbarer
+		Widerstand liefert unterschiedliche Spannungswerte, die
+		durch einen Analog-Digital-Wandler abgetastet werden können.
+	\item[\normalfont\itshape interfacebasiert]
+		Die Peripherie wird über eine standardisierte Schnittstelle,
+		wie UART oder \ItC, angesprochen.
+	\end{LaTeXdescription}
+	Die Ansteuerungen von Aktoren lässt sich analog klassifizieren.  Hierbei
+	reagiert der Aktor auf eine anliegende Spannung oder Flanke bzw. ihm
+	wird seine auszuführende Aktion über einen Befehl mitgeteilt.
+
+	Diese Klassen sollen im Folgenden näher beleuchtet werden.
+
+
+%===============================================================================
+\subsection{Direkte Ansteuerung}
+\label{sec:anst:direkt}
+	Die direkte Ansteuerung von Sensoren ist verschiedentlich mit Problemen
+	behaftet.
+%-------------------------------------------------------------------------------
+\subsubsection{Spannungswerte}
+	Der Analog-Digital-Wandler leidet unter vorhersehbaren und unvorhersehbaren
+	Messfehlern.
+
+	Unvorhersehbare Messfehler ergeben sich durch elektromagnetische
+	Störungen, die durch interne und externe Schaltkreise entstehen.
+	\autocite[][S.\,422]{atmega128rfa1} Die Unvorhersehbarkeit besagt nicht,
+	dass diese Fehler nur selten auftreten -- vielmehr treten sie sogar
+	häufig auf.  Lediglich die konkrete Auswirkung des Fehlers ist
+	nicht vorhersehbar.
+
+	Diese Fehler können verringert werden, indem nicht benötigte Komponenten
+	abgeschalten werden und  der \enquote{ADC Noise Reduction Mode}
+	\autocite[][S.\,159]{atmega128rfa1} genutzt wird.  Üblich ist es auch
+	mehrere (\zB 16 oder 128) Messungen direkt hintereinander durchzuführen
+	und einen Mittelwert zu bilden.  Weitere Möglichkeiten sind hier
+	auch in \autocite[][S.\,422]{atmega128rfa1} beschrieben.
+
+	Dem stehen die vorhersehbaren Fehler entgegen.  Hier ist zum einen ein
+	festgestellter systematischer Messfehler des ATmega128RFA1 zu nennen.
+	So weichte der Messwert im unteren Wertebereich wenig und mit steigendem
+	Wertebereich weiter ab. (siehe \autoref{fig:ad:messfehler} und \autoref{tbl:ad:messfehler})
+	Der Fehler wurde noch nicht näher bestimmt und sollte weiter untersucht
+	werden, ob dies von Modell zu Modell oder sogar von Gerät zu Gerät
+	abweicht.  Letzteres wäre katastrophal, da sich dann für jedes einzelne
+	Gerät die Notwendigkeit einer Kalibrierung ergeben würde.
+	%\input{fig/ad_schaltung}%
+	\input{tbl/ad_messwerte}%
+	\input{fig/ad_messfehler}%
+
+	Die Konvertierung der Spannung erfolgt durch sukzessive Approximation
+	\autocite[][S.\,412]{atmega128rfa1} anhand einer Referenzspannung.
+	Ergibt sich die zu messende Spannung aus der Betriebsspannung, so ist
+	beim Batteriebetrieb des Sensorknotens ein Absinken der Betriebsspannung
+	im Laufe der Betriebszeit zu beachten.
+
+	Soll ein \emph{Aktor} mittels analoger Spannungswerte angesteuert werden,
+	so kann dies durch Pulsweitenmodulation erreicht werden.  Auf dem
+	ATmega128RFA1 können mit den Timern 0 und 2 Spannungswerte zwischen
+	Ground und Vcc moduliert werden.
+
+%-------------------------------------------------------------------------------
+\subsubsection{Interrupts}
+	Mittels Interrupts kann auf sich verändernde anliegende Signale
+	an einem Eingangspin reagiert werden.  Der ATmega128RFA1 kann dabei
+	auf steigende, fallend oder beide Flanken reagieren.  Zusätzlich kann er
+	auch Interrupts auslösen, solange an dem Pin ein Low-Signal anliegt.
+	\autocite[][S.\,220]{atmega128rfa1}
+
+	Problematisch ist dabei, dass der Programmierer selber die Signale
+	entprellen muss.  Außerdem wurde ein eigenartiges Verhalten
+	der Interrupts 0 und 1 festgestellt.  Jeder Interrupt funktioniert für
+	sich.
+	Werden jedoch beide gleichzeitig verwendet, so kommt
+	es zu folgender Situation:  Wird hardwareseitig der Interrupt
+	0 ausgelöst, so wird einmal die Interrupt-Service-Routine
+	des Interrupts 0 und zweimal die Interrupt-Service-Routine des
+	Interrupts 1 ausgelöst.  Ebenso trat dieses Phänomen andersherum
+	auf -- bei einem hardwareseitigen Auslösen des Interrupts 1
+	wurde einmal die Interrupt-Service-Routine des Interrupts 1 und
+	zweimal die Interrupt-Service-Routine des Interrupts 0 ausgelöst.
+	Die Ursache für dieses Verhalten muss noch weiter untersucht werden.
+	Dabei sollte auch geklärt werden, ob dies für die anderen Interrupts
+	ebenso zutrifft.
+
+	Um \emph{Aktoren} über Flanken oder High-/Low-Pegel zu steuern, können
+	die Pins als Ausgang deklariert werden und dann bei Bedarf an- und
+	ausgeschalten werden.
+
+
+%===============================================================================
+\subsection{Interfacebasierte Ansteuerung}
+	Im Gegensatz zur in \autoref{sec:anst:direkt} beschriebenen direkten
+	Ansteuerung, werden bei der interfacebasierten Ansteuerung die
+	eigentlichen Messwerte von einem externen Schaltkreis bestimmt und
+	dem Mikrocontroller nur noch über ein Interface zur Verfügung gestellt.
+	Die Abstraktion zum physikalischen Problem der Messung ist also höher.
+
+	Der ATmega128RFA1 bietet für die Schnittstellen UART, \ItC und SPI
+	eine direkte Hardwareunterstützung.  Andere Schnittstellen müssen
+	selber mit ihren Timings programmiert werden.  Über UART können nur
+	zwei Geräte miteinander Daten austauschen. \ItC und SPI ermöglichen es,
+	auf einem Anschluss (nacheinander) mit verschiedenen angeschlossenen
+	Sensoren und Aktoren zu kommunizieren.
+
+	Bei den Protokollen kann man zwischen Binär- und Textprotokollen
+	unterscheiden.
+%-------------------------------------------------------------------------------
+\subsubsection{Binärprotokolle}
+	Binärprotokolle sind relativ kompakt.  Der Master schickt einen
+	Befehl\,/\,eine Anforderung an den Sensor bzw. Aktor, der dann direkt
+	antwortet.
+
+
+%-------------------------------------------------------------------------------
+\subsubsection{Textprotokolle}
+	Textprotokolle sind vielseitiger als Binärprotokolle.	Dafür
+	benötigen die Befehle und Antworten mehr Bytes bei der Übertragung.
+	Die Übertragung dauert also länger und verbraucht damit mehr Energie.
+	Zusätzlich muss die Nachricht (umständlich) geparst und Zahlen von
+	ASCII-Code in Integerwerte (und umgekehrt) überführt werden, um sie
+	weiter verarbeiten zu können.	Auch dieses Parsen erhöht sowohl
+	den Energiebedarf als auch den Speicherbedarf für Zeichenklassen-
+	und Zustandsübergangstabellen.  Wenn außerdem die Länge der
+	einzelnen Nachrichten nicht explizit durch das Protokoll begrenzt
+	ist, muss dynamisch Speicher zum Puffern der eingehenden Nachricht
+	reserviert werden, was sich ungünstig auf speicherarme Systeme wie
+	Mikrocontroller auswirkt.
+
