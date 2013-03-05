@@ -324,7 +324,7 @@ $(OUTDIR)/$(1)%.depend: $(1)%.tex
 $(OUTDIR)/$(1)%.aux: $(1)%.tex $(OUTDIR)/$(1)%.depend always
 	@$$(call echo-compiling-latex,$$<,"draft")
 	@$$(call create-output-dir,$$(@D))
-	@$$(call check-main-document,$$*.tex)
+	@$$(call check-main-document,$(1)$$*.tex)
 	@$$(call latex-draft-cmd,$(1)$$*)
 	@$$(call run-biber-if-necessary,$(1)$$*)
 
