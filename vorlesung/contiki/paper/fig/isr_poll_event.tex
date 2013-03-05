@@ -1,0 +1,39 @@
+\begin{figure}
+\centering
+\begin{tikzpicture}[
+	>=stealth',
+	Objekt/.style={
+		top color=white,
+		bottom color=blue!50!black!20,
+		draw=blue!50!black!50,
+		minimum width=3.5cm,
+		minimum height=.8cm,
+		rectangle,
+		rounded corners=1mm
+		},
+	Pfeil/.style={
+		top color=white,
+		bottom color=orange!50!black!20,
+		draw=orange!50!black!50,
+		minimum width=8mm,
+		single arrow
+		},
+	]
+
+	
+	\node [Objekt] (hw) {Hardware};
+	\node [Objekt] (isr) [below of=hw,yshift=-.5cm] {ISR};
+	\node [Objekt] (handler) [below of=isr,yshift=-.5cm] {Polling-Handler};
+	\node [Objekt] (thread) [below of=handler,yshift=-.5cm] {Thread};
+
+	\draw [->] ([yshift=-1mm]hw.east) to [bend left=70] node [right] {Interrupt} ([yshift=1mm]isr.east);
+	\draw [->] ([yshift=-1mm]isr.east) to [bend left=70] node [right] {Poll} ([yshift=1mm]handler.east);
+	\draw [->] ([yshift=-1mm]handler.east) to [bend left=70] node [right] {Event} ([yshift=1mm]thread.east);
+	\path (thread) edge [loop, in=170,out=190, distance=2cm, ->] 
+		node [left] {Event} (thread);
+
+	\node [Pfeil,rotate=90,anchor=west,minimum height=27mm] at ([xshift=3cm]thread.east) {zeitkritisch};
+\end{tikzpicture}
+\captionbelow{Zusammenspiel von Events und Polling}
+\label{fig:isr_poll_event}
+\end{figure}

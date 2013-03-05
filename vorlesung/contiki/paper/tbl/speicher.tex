@@ -1,0 +1,18 @@
+\begin{table}
+\centering
+\captionabove{Vergleich der Mechanismen zur Speicherverwaltung}
+\label{tbl:speicher}
+\begin{tabular}{lccc}
+\toprule
+	\theadhll{Mechanismus}
+	& \theadhll{Blockgrößen}
+	& \theadhll{Fragmentierung}
+	& \theadhll{Addressierung}
+	\tabularnewline
+\midrule
+memb	& fest		& nein	& direkt	\tabularnewline
+memm	& beliebig	& nein	& indirekt	\tabularnewline
+malloc	& beliebig	& ja	& direkt	\tabularnewline
+\bottomrule
+\end{tabular}
+\end{table}

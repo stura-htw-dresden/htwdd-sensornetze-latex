@@ -1,0 +1,98 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% filename:	contiki_paper.tex
+%% template:	Mon, 07 May 2012 13:01:14 +0200
+%% author:	Hermann Lorenz
+%% date:	26. Nov 2012 15:10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[%
+	ngerman         % globale Option (babel, hyperref...)
+	,oneside        % Einseitig
+	,BCOR=1cm       % Bindekorrektur
+	%,parskip=half   % kein Absatzeinzug, sondern -abstand
+	%                % für Package typearea
+	,paper=a4       % Druckbereich A4
+	,pagesize=auto  % Druckbereich als Papiergröße übernehmen
+	,listof=totoc   % Abbildungs- und Tabellenverzeichnis zum Inhaltsverz./PDF-Bookm. hinzufügen
+	,index=totoc    % Indexverzeichnis zum Inhaltsverz./PDF-Bookm. hinzufügen
+	,bibliography=totoc % Literaturverzeichnis zum Inhaltsverz./PDF-Bookm. hinzufügen
+	,11pt           % Große Schrift, besser geeignet für A4 (?)
+	]{scrbook}
+
+\input{preambel}
+
+\begin{document}
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\frontmatter
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\input{titlepage}
+
+	%\section*{\pdfbookmark[1]{Abstract}{abstract}Abstract}
+	%\input{abstract_en}
+	%\vfill
+	%\section*{\pdfbookmark[1]{Zusammenfassung}{zusammenfassung}Zusammenfassung}
+	%\input{abstract_de}
+	%\vfill
+	%\thispagestyle{empty}
+
+	% Vorwort
+	\input{sec_vorwort}
+
+	\bgroup
+		\clearpage
+		\renewcommand{\clearpage}{\relax}
+		% Inhaltsverzeichnis
+		\tableofcontents
+
+		% Abbildungsverzeichnis
+		\listoffigures
+
+		% Tabellenverzeichnis
+		\listoftables
+	\egroup
+
+	% Abkürzungsverzeichnis
+	\input{acronym}
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\mainmatter
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\input{sec_einleitung}
+	\input{sec_impl}
+
+
+	\chapter{Network Stack -- Implementation}
+	\label{sec:ns}
+	%---------------------------------------------------
+	\input{sec_netstack}
+	
+
+	%\chapter{Dynamic Module Loading}
+	%---------------------------------------------------
+	%\input{sec_dml}
+
+	\input{sec_schlussbemerkungen}
+
+	\appendix
+	\input{anhang_contiki_doc}
+	\input{anhang_contiki_repo}
+	\input{app_bsp}
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\backmatter
+	% Literaturverzeichnis: biblatex
+	\phantomsection
+	\printbibliography
+
+	%\pdfbookmark[1]{&\approx& ~Literaturverzeichnis}{toc}
+	
+	% Literaturverzeichnis: bibtex
+	%\bibliographystyle{alphadin}
+	%\bibliography{literature}
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%% LaTeX würdigen %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\thispagestyle{empty}
+	Dieses Dokument wurde mit dem Textsatzprogramm \LaTeX\ gesetzt.
+\end{document}

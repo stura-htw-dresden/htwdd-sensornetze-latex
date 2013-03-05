@@ -1,0 +1,37 @@
+\begin{table}[t]
+\begin{threeparttable}[c]
+\centering
+\caption[Contiki NetStack Beispiel]{Contiki NetStack Beispiel.
+	Zu sehen ist der Vergleich zwischen dem 6LoWPAN-Stack und die Implementation in Contiki.}
+	\label{tab:ContikiNetStackExample}
+\begin{tabular}{rrlrl}
+	\toprule
+	\multicolumn{3}{c}{\theadhll{6LoWPAN NetStack}}
+	& \multicolumn{2}{c}{\theadhll{Contiki NetStack}}
+	\tabularnewline
+	\cmidrule(r){1-3}
+	\cmidrule(l){4-5}
+	  \multicolumn{2}{c}{\theadhll{OSI-Schicht}}
+	  & \multicolumn{1}{c}{{\theadhll{Protokoll}}}
+	  & \multicolumn{1}{c}{{\theadhll{Contiki-Schicht}}}
+	  & \multicolumn{1}{c}{{\theadhll{Implementation}}}
+	  \tabularnewline
+	\midrule
+	4	& Transport 	& UDP					& 					& uIP-UDP 				\tabularnewline
+	\addlinespace
+	3	& Vermittlung 	& IPv6 / ICMPv6			& Network Driver	& SicsLoWPAN (uIPv6) 	\tabularnewline
+	-	& Adaptation\tnote{1}	& 6LoWPAN Adaptation	& 					& 					\tabularnewline
+	\addlinespace
+	2	& Sicherung 	& \ieeeframe{} MAC		& MAC Driver 		& CSMA 				\tabularnewline
+		& 				&						& RDC Driver 		& X-MAC\tnote{2} 			\tabularnewline
+	\addlinespace
+	1	& Bitübertragung & \ieeeframe{} PHY	& Framer 			& Framer\,802.15.4 	\tabularnewline
+		& 				 &						& Radio Driver 		& rf\,230\_bb 		\tabularnewline
+	\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item[1] 6LoWPAN fügt in das OSI-Referenzmodell eine neue Schicht ein: der Adaptation Layer.
+\item[2] 6LoWPAN definiert keinen genauen \ac{RDC}. In Contiki wird oft ContikiMAC als Default verwendet.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

@@ -1,0 +1,39 @@
+\begin{figure}
+\centering
+\begin{tikzpicture}[
+	>=stealth',
+	prozess/.style={fill,
+		top color=white,
+		bottom color=blue!50!black!20,
+		draw=blue!50!black!50,
+		minimum width=8mm,
+		circle},
+	]
+% Prozesse
+\node [prozess] (a) at (45:1cm) {A};
+\node [prozess] (b) at (285:1cm) {B};
+\node [prozess] (c) at (165:1cm) {C};
+
+% Prozessaufrufe
+\draw [->] (a)
+	edge [bend left]
+	node [auto] {\lstinline=process_post_synch(...)=}
+	(b);
+\draw [->] (b)
+	edge [bend left]
+	node [auto] {\lstinline=process_post_synch(...)=}
+	(c);
+\draw [->] (c)
+	edge [bend left]
+	node [auto] {\lstinline=process_post_synch(...)=}
+	node [-,
+		shape=cross out,
+		minimum width=.5cm,
+		minimum height=.5cm,
+		very thick,
+		draw=red] {}
+	(a);
+\end{tikzpicture}
+\captionbelow{Verbotener Zyklus von synchronen Events}
+\label{fig:event-cycle}
+\end{figure}

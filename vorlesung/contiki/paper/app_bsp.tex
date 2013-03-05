@@ -1,0 +1,83 @@
+\chapter{Beispielprojekt}
+%===============================================================================
+%===============================================================================
+	In diesem Abschnitt soll kurz erklärt werden, welche Schritte
+	unternommen werden müssen, um den ATmega128RFA1 über einen AVR-Dragon
+	mit Contiki zu bespielen.
+
+	Dabei wird der ATmega128RFA1 mittels JTAG an den AVR-Dragon angebunden.
+	Dieser widerum wird per USB an den PC angeschlossen.
+	(\siehe{fig:app:bsp:schaltung})
+	\input{fig/app_bsp_schaltung}
+
+	Neben Standardprogrammen, wie einem Editor, sollten noch der
+	AVR-Compiler, der Programmer AVR-Dude und Git installiert werden.  Für
+	Debian heißen die Pakete \lstinline=avr-gcc=, \lstinline=avrdude=
+	und \lstinline=git=.
+
+	Nun müssen die folgenden Schritte durchgeführt werden:
+	\begin{enumerate}
+	\item	Quellcode von Contiki besorgen:
+		\lstinputlisting[style=block]{lst/app_bsp_gitclone}
+
+		Damit entsteht im aktuellen Verzeichnis ein Ordner
+		\enquote{contiki}.  In diesem müssen ein paar Anpassungen
+		vorgenommen werden.
+
+	\item	Makefile.avr anpassen:
+		
+		In der Datei \lstinline=contiki/cpu/avr/Makefile.avr=
+		müssen die zwei Regeln
+		\lstinputlisting[style=block]{lst/app_bsp_makeavr}
+		durch
+		\lstinputlisting[style=block,emph={sudo}]{lst/app_bsp_makeavr_after}
+		ersetzt werden.
+
+		Dadurch bekommt der AVR-Dude die nötigen Rechte, mit dem
+		AVR-Dragon zu kommunizieren.  Möchte man dies nicht tun,
+		muss man sich auf dem jeweiligen Device Lese- und Schreibrechte
+		geben.
+	
+	\item	Des Weiteren müssen im Makefile für den ATmega128RFA1 noch zwei
+		weitere Änderungen vorgenommen werden.
+
+		Datei: \lstinline=contiki/platform/avr-atmegarfa1/Makefile.avr-atmegarfa1=
+		\begin{itemize}
+		\item	Ersetze
+			\lstinputlisting[style=block]{lst/app_bsp_makerfa1_programmer}
+			durch
+			\lstinputlisting[style=block]{lst/app_bsp_makerfa1_programmer_after}
+			um als Programmer den Dragon einzustellen.
+		\item	Ersetze
+			\lstinputlisting[style=block]{lst/app_bsp_makerfa1_port}
+			durch
+			\lstinputlisting[style=block]{lst/app_bsp_makerfa1_port_after}
+			damit der USB-Port des Dragon automatisch gefunden wird.
+		\end{itemize}
+	
+	\item	Projektverzeichnis anlegen:
+		\lstinputlisting[style=block]{lst/app_bsp_mkdir}
+	
+	\item	Im Projektverzeichnis Prozessdatei (\lstinline=prozess.c=) mit
+		dem Inhalt aus \autoref{lst:bsp:prozess} erstellen.
+		\lstinputlisting[%
+			style=float,%
+			label=lst:bsp:prozess,%
+			caption={Beispielprojekt prozess.c},%
+			language=c]%
+			{lst/app_bsp_prozess.c}
+
+	\item	Im Projektverzeichnis ein Makefile mit dem Inhalt aus
+		\autoref{lst:bsp:makefile} erstellen.
+		\lstinputlisting[%
+			style=float,%
+			label=lst:bsp:makefile,%
+			caption={Beispielprojekt Makefile},%
+			language=make]%
+			{lst/app_bsp_makefile}
+	
+	\item	Nun muss nur noch mit \lstinline=make program= das Projekt
+		kompiliert und auf den Mikrocontroller übetragen werden.
+		Dabei muss das Passwort für den sudo-Befehl des AVR-Dude
+		eingegeben werden.
+	\end{enumerate}

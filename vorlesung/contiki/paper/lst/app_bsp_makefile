@@ -1,0 +1,12 @@
+CONTIKI_PROJECT = prozess
+#CONTIKI_SOURCEFILES += datei1.c datei2.c ...
+TARGET = avr-atmega128rfa1
+
+
+all: $(CONTIKI_PROJECT)
+
+programm: $(CONTIKI_PROJECT).$(TARGET).u
+.PHONY: program
+
+CONTIKI = ../..
+include $(CONTIKI)/Makefile.include

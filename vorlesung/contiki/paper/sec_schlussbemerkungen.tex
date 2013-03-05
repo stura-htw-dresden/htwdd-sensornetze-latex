@@ -1,0 +1,101 @@
+\chapter{Schlussbemerkungen}
+\label{sec:fazit}
+
+	Die Einteilung des Contiki-OS in Module bzw. Schichten lässt eine
+	flexible und leichtgewichtige Konfiguration des Betriebssystems zu.
+
+	Beim Kompilieren des (ersten) HelloWorld-Projekts stellt man fest,
+	dass der komplette Contiki-Kern integriert wird,
+	obwohl nicht alle Komponenten für das geschriebene Programm benötigt
+	werden.
+	Dies ist darin begründet, dass Contiki es ermöglicht, zur Laufzeit
+	weitere Programme nachzuladen.  Würden nicht alle Kernkomponenten
+	von vornherein integriert werden, müsste beim Nachladen eines weiteren
+	Programmes eventuell zusätzlich der Contiki-Kern ausgetauscht werden.
+	Damit würde ein bedeutend höherer Energieaufwand für Funkübertragung
+	und Speichervorgang auf dem Endgerät einhergehen.
+
+\medskip
+
+	Durch eine gezielte Konfiguration des Systems ist es möglich, den
+	wenigen,
+	vorhandenen Speicher optimal zu nutzen.  Eine wesentliche Komponente
+	des Betriebssystems sind die leichtgewichtigen Protothreads, durch die
+	mehrere Prozesse kooperativ miteinander interagieren können.
+
+	Da die Protothreads sich einen gemeinsamen Stack teilen, ist der
+	Speicheroverhead auf eine Minimum reduziert.
+	Die eingängige Funktionsweise der Protothreads zieht
+	einen nur sehr geringen Einarbeitungsaufwand mit sich.
+
+	Mithilfe von Protothreads und Contiki-eigener IPC-Mechanismen sind
+	elegante und verständliche Lösungen vieler typischer und neuer Probleme
+	der Sensornetze möglich.
+
+\medskip
+
+	Tiefgreifende Veränderungen des Betriebssystemkerns bedürfen,
+	auf Grund der hohen Komplexität des Betriebssystems, eines hohen
+	Einarbeitungsaufwandes.
+
+	Die hohe Komplexität ist darin zu begründen, dass Contiki auf sehr
+	unterschiedlichen Mikrocontrollerplattformen eingesetzt werden soll.
+	Zum einen unterscheiden sich Plattformen untereinander stark und es
+	müssen daher einige Schritte zur Abstraktion der Hardware durchgeführt
+	werden.
+	Zum anderen ist
+	es selbst für eine einzelne Plattform nicht trivial, das System
+	komplett zu überblicken.
+
+	Ein Beispiel für das nichttriviale Verhalten ist der Energiesparmodus
+	des ATmega128RFA1: Ziel ist es, den Mikrocontroller in seiner
+	Schlafphase in den Deep-Sleep-Modus zu schalten, denn dort sind die
+	Energieeinsparungen erheblich.\footnote{Der AVR ATmega128RFA1 verbraucht
+	im Normalbetrieb etwa \(16\)--\unita{18}{\milli\ampere}.
+	Im normalen Sleep-Modus sinkt der Verbrauch zwar bereits auf
+	\unita{4}{\milli\ampere}, im Deep-Sleep-Modus allerdings noch weiter auf
+	\unita{250}{\nano\ampere}.}
+
+	In Contiki lässt es sich aber schwer abschätzen, ob und wann der
+	Mikrocontroller in den Deep-Sleep-Modus schalten kann.  Eine
+	Voraussetzung ist \iA das Ausschalten des Funksensors. Ob die anderen
+	Voraussetzungen erfüllt sind, kann nur derjenige sagen, der den vollen
+	Überblick über das Betriebssystem hat. Doch bietet Contiki hierzu
+	bereits Lösungen an, um die Energieeffizienz einzelner Module zu
+	kontrollieren.
+
+	Bei Projekten für eingebettete Systeme ist davon auszugehen, dass
+	die Entwickler das komplette System überschauen, um eine möglichst
+	hohe Energieeffizienz gewährleisten zu können.
+
+\medskip
+
+	Der Netzwerk-Stack von Contiki ist sinnvoll gegliedert, so dass sich
+	neue Implementierungen leicht nachvollziehbar einbauen lassen.
+	Für den Großteil der Internet-Anwendungen reicht die vorhandene
+	Implementierung aus, um den jeweiligen Sensorknoten mit dem Internet
+	zu verbinden.
+
+	Dennoch besteht im Bereich des Duty-Cycling noch viel Forschungsbedarf,
+	so dass in nächster Zeit vermutlich kein Standard zu erwarten ist, der
+	sich durchsetzen wird. Dies liegt vor allem daran, dass der Duty-Cycle
+	stark von den Anforderungen der jeweiligen Sensornetzanwendung abhängig
+	ist.
+
+	Da eine Schicht im Netzwerk-Stack sehr viele Varianten beinhalten kann,
+	wird der Einsatz von C-Makros nicht unvermeidbar bleiben, solange das
+	vorhandene Netzwerk-Konzept beibehalten wird.  Das bedeutet folglich,
+	dass die Entwickler eines Projekts sich über die Varianten, sowie deren
+	Kompatibilität zueinander, Gedanken machen müssen.  Dies erfordert eine
+	ausführliche Dokumentation der jeweiligen Implementation.
+
+\medskip
+
+	Alles in allem ist Contiki-OS ein Betriebssystem, das ausgereifte
+	Konzepte sowie Unterstützung bei der Einhaltung der Anforderungen an
+	das eingebettete System bietet.
+
+	Nichtsdestotrotz muss ein Entwickler gute Kenntnisse zu den Interna von
+	Contiki-OS haben, um die Sensornetzanforderungen optimal umzusetzen.
+	Mit einer guten Dokumentation ist es nicht schwierig, sich diese
+	Kenntnisse anzueignen.

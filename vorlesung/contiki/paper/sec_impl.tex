@@ -1,0 +1,369 @@
+\chapter{Implementationsaspekte}
+\label{sec:impl}
+%===============================================================================
+%===============================================================================
+
+
+
+\section{Protothreads}
+%===============================================================================
+	Betriebssysteme im Embedded-Bereich werden meistens
+	\emph{ereignisgesteuert} oder \emph{threadbasiert} implementiert.
+
+	\begin{description}
+	\item[threadbasiert]
+		Ein Programm wird linear durchlaufen.  Dabei kann es zwar durch
+		einen Scheduler unterbrochen werden bzw. selbständig die CPU
+		abgeben, der Kontrollfluss allerdings bleibt linear.
+
+		Der Vorteil besteht darin, dass es eine intuitive Programmierung
+		ermöglicht.
+
+		Für jeden Thread muss dabei ein eigener Stack im Hauptspeicher
+		angelegt werden.  Der Großteil des Stacks wird nie benutzt, muss
+		aber im Hauptspeicher reserviert vorgehalten werden.
+		Da der Hauptspeicher bei eingebetteten System aber sehr klein
+		ist -- beim ATmega128RFA1 \zB nur \unita{16}{\kilo\byte} --
+		sind so nur wenige Threads gleichzeitig möglich.
+
+		Dem kann theoretisch mit einem größeren Hauptspeicher
+		entgegengewirkt werden, allerdings geht mit einem größeren
+		Hauptspeicher auch ein erhöhter Energiebedarf einher.  Dies
+		steht der Notwendigkeit entgegen, den Mikrocontroller so
+		energieeffizient wie möglich zu betreiben.
+
+	\item[ereignisgesteuert]
+		Bei ereignisgesteuerten Systemen entfallen die Stacks für
+		einzelne Threads -- es existiert nur ein globaler Stack.
+
+		Durch die ereignisgesteuerte Programmierung sind allerdings
+		keine linearen Programmabläufe direkt möglich.  Sie müssen
+		mittels einer Zustandsmaschine umgesetzt werden.  Das ist
+		zum einen fehleranfällig und zum anderen vergrößert
+		sich dadurch unnötig der auszuführende Code, der wieder
+		Platz im Speicher benötigt und natürlich durch längere
+		Ausführungszeiten wieder mehr Energie benötigt.
+	\end{description}
+
+	Adam Dunkels, der Entwickler von Contiki, hat sich als Lösung diese
+	Problematik das Konzept der \emph{Protothreads} ausgedacht.  Sie sind in
+	Anlehnung an die Coroutinen in C von Simon Tatham entstanden
+	und ermöglichen ein kooperatives Multitasking mit nur einem
+	gemeinsamen Stack
+	\autocite{Contiki:UnderTheHood}.
+
+
+\subsection{Konzept}
+%-------------------------------------------------------------------------------
+	Als Konzept wird jeder Prozess zu einer Funktion, die aus einem
+	einzigen Switch-Block besteht \parensiehe{lst:pt-idee}.
+		\lstinputlisting[%
+			style=float,%
+			label=lst:pt-idee,%
+			caption={Grundkonzept eines Contikiprozesses},%
+			language=c]%
+			{lst/pt_idee.c}
+	Die einzelnen Case-Marken stellen dabei die möglichen Positionen
+	eines Kontextwechsels dar.  Wird dem Prozess vom Scheduler die CPU
+	zugewiesen, so wird die Prozessfunktion mit der jeweiligen Sprungmarke
+	aufgerufen, an der der Prozess fortgesetzt werden soll.
+
+	Bei der Abgabe der CPU wird die Prozessfunktion verlassen und dem
+	Scheduler mitgeteilt, an welcher Sprungmarke bei der nächsten
+	CPU-Zuteilung die Funktion fortgesetzt werden soll.
+
+	Dabei ist es sehr einfach möglich, die CPU abzugeben, um anderen
+	Prozessen die Abarbeitung zu ermöglichen \parensiehe{lst:pt-pause}
+		\lstinputlisting[%
+			style=float,%
+			label=lst:pt-pause,%
+			caption={Abgabe der CPU ohne eine Bedingung zur weiteren Abarbeitung},%
+			language=c]%
+			{lst/pt_pause.c}
+	bzw. auf ein bestimmtes Ereignis/eine Bedingung zu warten
+	(\siehe{lst:pt-wait}).
+		\lstinputlisting[%
+			style=float,%
+			label=lst:pt-wait,%
+			caption={Abgabe der CPU mit einer Bedingung zur weiteren Abarbeitung},%
+			language=c]%
+			{lst/pt_wait.c}
+
+	Der Switch-Block erlaubt es dabei auch direkt in einen
+	Schleifenblock oder in einen If-Else-Block zu springen.
+	\autocite{dunkels06protothreads,duff:loops}
+	%\todo{Quelle, hat Dunkels referenziert, Dunkels \enquote{Protothreads: Simplifying Event-Driven Programming of Memory-Constrained Embedded Systems} verweist auf Duff Quellennr 8}
+	Damit ist ein Kontextwechsel
+	an den verschiedensten Stellen \emph{in der Prozessfunktion} möglich.
+
+	Nachteilig ist hier, dass dieser Mechanismus \emph{nur} direkt in den
+	Threads einsetzbar ist.  Ein Kontextwechsel in einer
+	aufgerufenen Funktion ist nicht möglich.  Ist eine Funktion so
+	umfangreich, dass man einen Kontextwechsel während der Laufzeit
+	vorsehen möchten, dann kann man die Funktion in einen eigenen Thread
+	auslagern.  Dieser Thread wird dann gestartet und der Prozess wartet
+	auf die Beendigung des Threads.  Im Thread kann dann aber wieder ein
+	Kontextwechsel an den passenden Stellen vorgenommen werden.
+
+
+\subsection{Umsetzung}
+%-------------------------------------------------------------------------------
+	Das Konzept der Protothreads kann von jedem Programmierer auch von Hand
+	umgesetzt werden.  Der Vorteil der Protothreadimplementierung in
+	Contiki besteht darin, dass die Komplexität des Switch-Blocks
+	durch Precompilermakros gekapselt wird \parensiehe{lst:pt-process}.
+		\lstinputlisting[%
+			style=float,%
+			label=lst:pt-process,%
+			caption={Grundgerüst eines Contiki-Prozesses},%
+			emph={PROCESS,PROCESS_THREAD,PROCESS_BEGIN,PROCESS_END,PROCESS_PAUSE,PROCESS_WAIT_UNTIL},%
+			language=c]%
+			{lst/pt_process.c}
+	Zu sehen, was die Makros letztendlich machen ist nur noch schwer
+	möglich und möchte man etwas am Prozess-/Threadsystem ändern, so ist
+	dies mit einem hohen Aufwand verbunden.  Für den Anwender der
+	Protothreads wird die Arbeit aber bedeutend leichter.  Der Code wird
+	les- und wartbar.
+
+	Contiki stellt neben der bedingungslosen CPU-Abgabe bzw. einer eigenen
+	Bedingung auch weitere Funktionen zum Kontextwechsel bereit.
+	Etwa um auf Events \parensiehe{sec:impl:events} des Betriebssystems zu
+	warten.  Diese weiteren Kontextwechsel ermöglichen die Mittel des
+	Betriebssystems effizient zu nutzen und sind in der Dokumentation
+	\parencite[siehe][Contiki processes]{Contiki:Doc}
+	erklärt.
+
+	Für die Label der Case-Marken wird von Contiki die aktuelle
+	Zeilennummer des Quellcodes eingesetzt.  Diese ist damit in der Datei
+	-- und damit in dem Prozess -- einzigartig, sofern der Programmierer
+	keine zwei Kontextwechsel in einer Codezeile vorsieht.
+
+
+\subsection{Bewertung}
+%-------------------------------------------------------------------------------
+	Die Protothreads ermöglichen relativ viele \emph{kooperative
+	Threads} mit einem nur geringen Speicher zu betreiben, da nur ein
+	einziger Stack verwendet wird.	Die Kontextwechsel sind mit einem
+	nur geringen Aufwand zur Sicherung des Kontextes verbunden.
+
+	Die Verwendung der Protothreadbibliothek ist relativ simpel.
+	Eine Überführung von linearen Abläufen in Zustandsmaschinen ist
+	nicht notwendig.
+
+	Konzeptbedingt gibt es aber ein paar Nachteile, die bei der
+	Programmierung zu beachten sind.
+	\begin{itemize}
+	\item	In einem Thread können keine Switch-Blöcke verwendet
+		werden.
+	\item	Variablen eines Threads, die ihren Wert über einen
+		Kontextwechsel behalten sollen, müssen als \lstinline=static=
+		oder als globale Variable deklariert werden.  Im letzteren
+		Fall sollte die Variable \lstinline=volatile= gesetzt werden,
+		falls verschiedene Threads und/oder \acp{ISR}
+		darauf zugreifen.
+	\item	Kontextwechsel müssen vom Programmierer explizit angegeben
+		werden -- es findet kein präemptiver Entzug der CPU-Ressource
+		statt.
+		Bei Algorithmen mit hoher Laufzeit muss daher regelmäßig ein
+		Kontextwechsel vorgesehen werden.
+		Dafür weiß der Programmierer aber wann das Programm unterbrochen
+		werden kann und kann hier Aufwand für Zustandssicherungen
+		einsparen.
+	\item	Ein Kontextwechsel ist nur in Threads möglich.  Wird ein Teil
+		des Programmes in eine Funktion ausgelagert, so ist dort kein
+		Kontextwechsel möglich.  Ist eine Auslagerung notwendig,
+		so kann man einen weiteren Thread mit der Aufgabe starten, der
+		wiederum selbständig Kontextwechsel vorsehen kann.
+	\end{itemize}
+
+
+
+\section{IPC-Mechanismen}
+%===============================================================================
+	Contiki bietet eine Reihe von \acs{IPC}-Mechanismen zur Kommunikation und
+	Synchronisierung zwischen den einzelnen Prozessen an.
+
+
+\subsection{Events und Polling}
+%-------------------------------------------------------------------------------
+\label{sec:impl:events}
+	Unter Contiki können Prozessen zwei verschiedene Signale zugestellt
+	werden: Events und Polling
+	\begin{description}
+	\item[Events]
+		Events können von einem Prozess zu einem anderen Prozess
+		zugestellt werden.  Sie werden dabei in einer Warteschlange
+		(Event-Queue) einsortiert und dann der Reihe nach den jeweiligen
+		Prozessen zugestellt.
+	\item[Polling]
+		Neben Events kann bei jedem Prozess ein Polling-Flag gesetzt
+		werden.  Bevor der Scheduler die Event-Queue abarbeitet,
+		schaut er bei jedem Prozess, ob das Polling-Flag gesetzt ist.
+		Ist dieses Flag gesetzt, so wird direkt der Polling-Handler
+		ausgeführt.  Erst wenn alle Polling-Flags abgearbeitet sind,
+		wird das erste Event aus der Queue ausgeliefert.
+	\end{description}
+
+	Das Polling-Flag wird dadurch notwendig, dass \acp{ISR} möglichst
+	kurz sein sollen.  In ihnen sollen nur die notwendigsten Maßnahmen
+	vorgenommen werden, um \zB ein eingegangenes Signal nicht zu verlieren.
+	Dieses Signal wird in der \ac{ISR} in einen Cache geschrieben und
+	der Prozess, der das Signal eigentlich verabeiten soll, wird über
+	das Polling-Flag benachrichtigt, dass ein neues Signal vorliegt.
+
+	Events sind also dafür da, dass bestimmte Signale nicht verloren gehen.
+	Das Polling hingegen sorgt dafür, dass Signale, die dringend bearbeitet
+	werden müssen ausreichend schnell zwischengespeichert werden könne, so
+	dass bei häufig eingehenden Signalen keine Signale verloren gehen.
+	(\siehe{fig:isr_poll_event})
+	\input{fig/isr_poll_event.tex}
+
+	Beispielsweise könnte eine \ac{ISR} ein eingehendes Zeichen auf der
+	seriellen Verbindung in einer globalen Variablen zwischenspeichern
+	und einem Prozess A per Polling mitteilen, das dort ein neues Zeichen
+	vorliegt.  Dadurch, das sich der Polling-Handler des Prozesses A vor
+	die Events in der Event-Queue schiebt, kann hier etwas aufwändiger
+	das Zeichen in einen größeren Puffer eingefügt werden und dem
+	Prozess A das Event zugestellt werden, dass ein weiteres Zeichen im
+	Puffer wartet.
+
+	Damit ist mit nur sehr wenigen Maschineninstruktionen die \ac{ISR}
+	abgehandelt und die Interrupts sind alle wieder verfügbar.  Während
+	jetzt der Polling-Handler (aufwändig) das eingegangene Zeichen in
+	einen Cache einfügt und das Event auslöst, kann \zB trotzdem ein
+	weiterer Interrupt, \zB diesmal des Analog-Digital-Wandlers, behandelt
+	werden.
+
+	Die Trennung von Polling und Events erlaubt damit die Trennung von
+	\begin{itemize}
+	\item	Entgegennahme eines Signals (\ac{ISR}),
+	\item	aufwändiger Zwischenspeicherung eines Signals (Poll) und
+	\item	eigentlicher Verarbeitung des Signals (Event).
+	\end{itemize}
+
+\subsubsection{Programmierung Polling}
+	Ein Pollingsignal wird mittels
+	\lstinline=process_poll(struct process * p)= abgesetzt.
+	Der Pollinghandler wird in der Definition des Prozessthreads bekannt
+	gegeben. (\siehe{lst:pollhandler})
+		\lstinputlisting[%
+			style=float,%
+			label=lst:pollhandler,%
+			caption={Installation eines Polling-Handlers},%
+			emph={PROCESS,PROCESS_THREAD,PROCESS_BEGIN,PROCESS_END,PROCESS_PAUSE,PROCESS_WAIT_UNTIL,PROCESS_POLLHANDLER},%
+			language=c]%
+			{lst/pollhandler.c}
+	Aufgrund der Makroimplementierung kann man den auszuführenden Code auch
+	direkt dem Makro \lstinline=PROCESS_PROLLHANDLER()= übergeben.  Dies ist
+	aber aus Gründen der Lesbarkeit eher abzulehnen.
+
+\subsubsection{Programmierung Events}
+	Events können synchron oder asynchron übergeben werden.  Die
+	\emph{asynchrone} Methode funktioniert, wie oben bereits beschrieben
+	und erfolgt mit der Funktion \lstinline=process_post(...)=.
+
+	Die \emph{synchrone} Methode funktioniert dabei etwas anders.  Hierbei
+	wird durch den Aufruf von \lstinline=process_post_synch(...)= sofort
+	die Kontrolle an den jeweiligen anderen Prozess abgegeben.  Hierbei muss
+	aber darauf geachtet werden, dass keine wechselseitigen synchronen
+	Aufrufe auftreten bzw. sich ein Ring bildet. (\siehe{fig:event-cycle})
+	\input{fig/event_cycle}
+
+	Die Möglichkeiten für Prozesse auf ein bestimmtes oder ein beliebiges
+	Event zu warten sind vielfältig.  Diese -- und die konkreten
+	Parameter für das Absetzen eines Events -- können in der Dokumentation
+	von Contiki nachgelesen werden
+	\parencite[siehe][Contiki processes]{Contiki:Doc}.
+
+
+\subsection{Semaphore}
+%-------------------------------------------------------------------------------
+	Für Semaphore stehen die drei Makros
+	\begin{itemize}
+	\item	\lstinline=PT_SEM_INIT()=,
+	\item	\lstinline=PT_SEM_WAIT()= und
+	\item	\lstinline=PT_SEM_SIGNAL()=
+	\end{itemize}
+	zur Verfügung.  Sie greifen jeweils auf ein Struct vom Typ
+	\lstinline=struct pt_sem= zu und ermöglichen damit die Synchronisierung
+	\emph{zwischen} verschiedenen \emph{Prozessen}
+	\parencite[siehe][Protothreads semaphores]{Contiki:Doc}.
+
+	Die Semaphore der Protothreads haben den Nachteil, dass sie nur für
+	Threads zur Verfügung stehen.	Sie können also weder in \acp{ISR}
+	noch in Event-Handlern eingesetzt werden.  Wird eine Variable nicht nur
+	zwischen Threads geteilt, dann muss hier ein alternativer Mechanismus
+	gesucht werden.
+
+	Für \acp{ISR} muss verhindert werden, dass \acp{ISR} überhaupt
+	ausgeführt werden können, da ein Warten in der \ac{ISR} aufgrund der
+	Anforderung an die Kürze einer \ac{ISR} nicht möglich ist.  Die Variable
+	muss also an allen anderen Stellen mit \lstinline=cli()= und
+	\lstinline=sei()= oder einem ähnlichen Mechanismus gesperrt werden.
+	In einem Event-Handler darf ebenfalls kein \lstinline=PT_SEM_WAIT=
+	verwendet werden, da dieses intern auf  \lstinline=PT_WAIT=
+	zurückgreift, was in einem Handler nicht verwendet werden darf.
+
+	Ein weiteres kleines Manko ist es, dass eine Try-Funktion fehlt, die
+	entweder den kritischen Abschnitt betritt oder mit einem Fehlerwert
+	sofort zurückkehrt, statt an dieser Stelle zu warten.
+
+
+\subsection{Protosockets}
+%-------------------------------------------------------------------------------
+	Contiki bietet zur Kommunikation zwischen Prozessen die Protosockets.
+	Sie sind eine leichtgewichtige Implementation, die ein Interface ähnlich
+	der BSD-Sockets anbieten.
+	(\lstinline=PSOCK_INIT=,
+		\lstinline=PSOCK_SEND_STR=,
+		\lstinline=PSOCK_READBUF=, \dots)
+
+	Da die Implementierung der Protosockets auf Protothreads zurückgreift,
+	sind sie mit den selben Problemen behaftet.  So sind sie \zB an einen
+	Protothread geknüpft.  Auf einem Protosocket kann also nie mehr als ein
+	Protothread arbeiten
+	\parencite[siehe][Protosockets library]{Contiki:Doc}.
+
+
+\subsection{Speicherverwaltung}
+%-------------------------------------------------------------------------------
+	Das dynamische Anfordern von Speichersegment ist auf eingebetteten
+	System wenig üblich, da der Speicher sowieso knapp ist und das
+	dynamische Anfordern zusätzlichen Speicher für die Verwaltung der
+	Segmente verbraucht.  Trotzdem bietet Contiki drei verschiedene
+	Möglichkeiten, falls es unbedingt benötigt wird.
+
+	\begin{description}
+	\item[memb]
+		Über das \emph{Memory Block Management} wird zur Compilezeit
+		über \lstinline=MEMB= eine feste Anzahl gleichgroßer
+		Speichersegmente reserviert.  Diese können dann zur Laufzeit
+		über \lstinline=memb_alloc= angefordert und über \lstinline=memb_free= freigegeben werden
+		\parencite[siehe][Memory block management functions]{Contiki:Doc}.
+	\item[mmem]
+		Der \emph{Managed Memory Allocator} erlaubt es zur Laufzeit
+		zu entscheiden, wie groß ein angefordert Speicherbereich sein soll (\zB für Strings).
+		Um den Speicherbedarf klein zu halten, werden auch nach der
+		Anforderung die Speicherbereiche automatisch umsortiert.
+		Daher ist hier dann eine indirekte Adressierung des gewünschten
+		Speicherbereiches notwendig
+		\parencite[siehe][Managed memory allocator]{Contiki:Doc}.
+	\item[malloc]
+		Zusätzlich stehen in der stdlib.h die bekannten C-Funktionen
+			\lstinline=malloc=,
+			\lstinline=calloc=,
+			\lstinline=realloc= und
+			\lstinline=free=
+		zur Verfügung.  Die angeforderten Speicherbereiche werden im
+		Gegensatz zu memm nicht umsortiert, müssen also nicht indirekt
+		adressiert werden.  Der Speicher wird mittels eines Heaps
+		verwaltet.  Dadurch kann es zur Fragmentierung und damit zum
+		unnötigen Speicherverbrauch kommen.  Deshalb sollte auf diese
+		Funktionen möglichst nicht zurückgegriffen werden
+		\autocite{ContikiWiki:malloc}.
+	\end{description}
+
+	Generell sind memb und memm zu bevorzugen.  Die Entscheidung für einen
+	der Mechanismen muss jedoch von Fall zu Fall erfolgen.
+	(\siehe{tbl:speicher})
+	\input{tbl/speicher}

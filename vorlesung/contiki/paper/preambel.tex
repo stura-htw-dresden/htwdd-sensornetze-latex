@@ -1,0 +1,249 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Lokalisierung %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}	% Umlaute direkt eingeben
+\usepackage[T1]{fontenc}	% Wörter mit Umlaute umbre-
+				% chen
+\usepackage[ngerman]{babel}		% deutsche Bezeichner
+\usepackage[babel,german=quotes]{csquotes}	% \enquote{}
+\usepackage{libertine}
+\usepackage[scaled=0.83]{beramono}
+\usepackage{microtype}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% IEEEtran tools %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage{IEEEtrantools}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Tabellen %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{tabularx}
+\usepackage{booktabs}	% \toprule\midrule\bottomrule
+			% \addlinespace
+\usepackage{threeparttable} % Tablenotes
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Bilder %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}	% \includegraphics{bild.pdf}
+\usepackage{rotating}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{shapes}
+\usetikzlibrary{fit}
+\usetikzlibrary{backgrounds}
+
+% Paket zur Anpassung von Titeln von Gleitobjekten
+\usepackage[figureposition=bottom,tableposition=above]{caption}
+% Tabelle 1: ABC
+%            XYZ
+\captionsetup{format=hang}
+
+
+% Paket, um Grafiken / Tabellen zu gruppieren (subfigure is obsolete)
+\usepackage{subcaption}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Farben %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xcolor}
+% hard colors
+\definecolor{hllblue}{rgb}{.2,.2,.7}
+% symbolic colors
+\definecolor{todocolor}{named}{red}
+\definecolor{linkcolor}{named}{hllblue}
+\definecolor{lstbg}{gray}{.9}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Mathematische Symbole %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Sonstige Symbole %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{eurosym}
+\usepackage{xspace}
+\usepackage{textcomp}
+\usepackage[italian,	% \unita, conflict with babel
+	squaren,	% \squaren, conflict with amssymb
+	binary		% \byte usw.
+	]{SIunits}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Quellcodes %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{listings}
+\usepackage{scrhack}	% Warnungen im Zusammenhang mit
+			% listings verhindern, zusätzlich
+			% für Listings das Babelpaket
+			% aktivieren, usw.
+\lstdefinestyle{nummeriert}{numbers=left}
+\lstdefinestyle{monospace}{basicstyle=\ttfamily\scriptsize}
+\lstdefinestyle{block}{style=monospace,
+	emphstyle=\bfseries,
+	breaklines=true,
+	breakatwhitespace=false,
+	prebreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\hookleftarrow}}
+	}
+\lstdefinestyle{float}{style=block,float}
+%\lstdefinestyle{block}{style=nummeriert,%
+	%style=monospace,%
+	%backgroundcolor=lstbg}
+\lstset{basicstyle=\ttfamily}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% pdf-links %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{varioref}	% \vpageref{}
+\usepackage[%
+	pdftex,	% in Links Umbrüche erlauben
+	bookmarks,
+	bookmarksopen=false
+	]{hyperref}
+\hypersetup{
+	pdfauthor={Angelos Drossos, Hermann Lorenz},
+	pdftitle={Contiki-OS}
+	}	% \autoref{}
+\hypersetup{%
+	%ocgcolorlinks,	% beim Drucken die Linkfarben ignorieren
+			% kann unter Umständen Probleme bereiten
+			% Links können nicht umgebrochen werden
+	colorlinks,%
+	linkcolor=linkcolor,%
+	linktoc=all	% in Verzeichnissen Zahlen und Text verlinken
+	}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Fortsetzung Symbole %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{ellipsis}	% solve \dots problems
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Literaturverzeichnis %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% recommend:
+%\usepackage[ngerman]{babel}
+%\usepackage[babel,german=quotes]{csquotes}
+
+% Bibliographien erstellen mit biblatex (Teil 1)
+% see: http://biblatex.dominik-wassenhoven.de/download/DTK-2_2008-biblatex-Teil1.pdf
+
+\usepackage[%
+	backend=biber,    % (bibtex, biber)
+	bibencoding=utf8, % wenn .bib in utf8, sonst ascii
+	safeinputenc,     % Das inputenc Package hat nur einen begrenzten UTF8-Satz
+	bibwarn=true,     % Warnung bei fehlerhafter bibDatei
+	sortlocale=de,    % Deutsche Sortierung aktivieren
+	%style=alphabetic, % Zitierstil [alphabetic, numeric-comp, etc.]
+	style=ieee,       % Zitierstil IEEE, ab biblatex-1.2c
+	%style=ieee-alphabetic,       % Zitierstil IEEE, ab biblatex-1.2c
+	%isbn=false,                % ISBN nicht anzeigen, gleiches geht
+	%                           %    mit nahezu allen anderen Feldern
+	%pagetracker=true,          % ebd. bei wiederholten Angaben
+	%                           %    (false=ausgeschaltet, page=Seite,
+	%                           %    spread=Doppelseite, true=automatisch)
+	%maxbibnames=50,            % maximale Namen, die im Literaturverzeichnis
+	%                           %    angezeigt werden (ich wollte alle)
+	%maxcitenames=3,            % maximale Namen, die im Text angezeigt werden,
+	%                           %    ab 4 wird u.a. nach den ersten Autor angezeigt
+	%autocite=inline,           % regelt Aussehen für \autocite (inline=\parancite)
+	%block=space,               % kleiner horizontaler Platz zwischen den Feldern
+	%backref=true,              % Seiten anzeigen, auf denen die Referenz vorkommt
+	%backrefstyle=three+,       % fasst Seiten zusammen, z.B. S. 2f, 6ff, 7-10
+	%date=short,                % Datumsformat
+]{biblatex}
+
+% Abstände
+%\setlength{\bibitemsep}{1em}   % Abstand zwischen den Literaturangaben
+%\setlength{\bibhang}{2em}      % Einzug nach jeweils erster Zeile
+
+% Bibtex-Datei wird schon in der Preambel eingebunden
+\addbibresource{bib/literature.bib} % Biber
+%\bibliography{bib/liteature}        % BibTex
+
+% bibtex:
+% \usepackage{cite}
+
+% BibLatex/Biber Commands aufheben (weil Biber nicht installiert ist)
+\usepackage{xargs}
+%\renewcommandx{\cite}[3][1=, 2=]{\textcolor{red}{#1 [CITE(#3)] #2}}
+%\renewcommandx{\Cite}[3][1=, 2=]{\textcolor{red}{#1 [CITE(#3)] #2}}
+%\renewcommandx{\autocite}[3][1=, 2=]{\textcolor{red}{#1 [AUTOCITE(#3)] #2}}
+%\renewcommandx{\Autocite}[3][1=, 2=]{\textcolor{red}{#1 [AUTOCITE(#3)] #2}}
+%\renewcommandx{\parencite}[3][1=, 2=]{\textcolor{red}{(#1 [PARENCITE(#3)] #2)}}
+%\renewcommandx{\Parencite}[3][1=, 2=]{\textcolor{red}{(#1 [PARENCITE(#3)] #2)}}
+%\renewcommandx{\citetitle}[3][1=, 2=]{\textcolor{red}{#1 CITETITLE(#3) #2}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Abkürzungsverzeichnis %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[% Optionen
+	%footnote, % die Langform als Fußnote ausgeben
+	%nohyperlinks, % Wenn hyperref geladen ist, wird die Verlinkung unterbunden
+	printonlyused, % nur Abkürzungen auflisten, die tatsächlich verwendet werden
+	%	withpage, % im printonlyused-Modus: Seitenzahl der ersten Verwendung angeben
+	%smaller, % Text soll kleiner erscheinen (Package relsize vorausgesetzt)
+	%dua, % es wird immer die Langform ausgegeben
+	%nolist, % es wird keine Liste mit allen Abkürzungen ausgegeben
+	]{acronym}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% eigene Macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\vautoref}[1]{\autoref{#1}\vpageref{#1}}
+\newcommand{\todo}[1]{%
+	\marginpar{\footnotesize\textcolor{todocolor}{#1}}%
+	\textcolor{todocolor}{TODO: #1}%
+	}
+\newcommand{\todox}[1]{%
+	\marginpar{\footnotesize\textcolor{todocolor}{#1}}%
+	\textcolor{todocolor}{#1}%
+	}
+\newcommand{\zB}{z.\,B.\xspace}
+\newcommand{\dhx}{d.\,h.\xspace}
+\newcommand{\idR}{i.\,d.\,R.\xspace}
+\newcommand{\iA}{i.\,A.\xspace}
+
+% use: Hallo (\engl{hello})
+\newcommand{\engl}[1]{engl.\,\emph{#1}\,\xspace}
+
+% \contikifile{path/to/file}{version}
+% use: \contikifile{core/dev/radio.h}{2.6}
+\newcommand{\contikifile}[2]{\emph{#1}}
+
+\newcommand*{\changefont}[3]{\fontfamily{#1}\fontseries{#2}\fontshape{#3}\selectfont}
+\newcommand{\func}[1]{{\changefont{cmtt}{m}{sc}#1}}
+\newcommand{\event}[1]{{\changefont{cmtt}{m}{sc}#1}}
+
+\newcommand{\theadhll}[1]{\emph{\scriptsize #1}}
+
+\newcommand{\tabref}[1]{Tabelle~\ref{tab:#1}}
+\newcommand{\figref}[1]{Abbildung~\ref{fig:#1}}
+\newcommand{\secref}[1]{Kapitel~\ref{sec:#1}}
+
+
+\newcommand{\siehe}[1]{siehe \autoref{#1}}
+\newcommand{\parensiehe}[1]{(\siehe{#1})}
+
+\newcommand{\ieeeframe}{IEEE~802.15.4}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% PDF Bookmarks %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\makeatletter
+\usepackage{etoolbox}
+\pretocmd{\tableofcontents}{%
+	\if@openright\cleardoublepage\else\clearpage\fi
+	\pdfbookmark[0]{\contentsname}{toc}%
+}{}{}%
+\makeatother
+
+% Trennmuster
+\hyphenation{IEEE}

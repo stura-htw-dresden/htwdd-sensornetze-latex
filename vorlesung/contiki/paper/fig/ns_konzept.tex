@@ -1,0 +1,53 @@
+\begin{figure}
+\centering
+\begin{tikzpicture}[
+	>=stealth',
+	NS Schicht/.style={
+		top color=white,
+		bottom color=blue!50!black!20,
+		draw=blue!50!black!50,
+		minimum width=3.5cm,
+		rectangle,
+		rounded corners=1mm
+		},
+	OSI Schicht/.style={
+		top color=white,
+		bottom color=orange!50!black!20,
+		draw=orange!50!black!50,
+		minimum width=8mm,
+		rectangle,
+		rounded corners=1mm
+		},
+	]
+
+\node [NS Schicht] (radio) {Radio Driver};
+\node [NS Schicht] (framer) [above of=radio] {Framer};
+\node [NS Schicht] (rdc) [above of=framer,yshift=.2cm] {RDC Driver};
+\node [NS Schicht] (mac) [above of=rdc] {MAC Driver};
+\node [NS Schicht] (nw) [above of=mac,yshift=.2cm] {Network Driver};
+
+\node (s0h) at (framer) [xshift=-7cm] {};
+\node (s1h) at (mac) [xshift=-7cm] {};
+\node (s2h) at (nw) [xshift=-7cm] {};
+
+% Boxen für die OSI-Schichten
+\begin{pgfonlayer}{background}
+	\node [OSI Schicht] (s0) [fit=(framer) (radio) (s0h)] {};
+	\node [OSI Schicht] (s1) [fit=(mac) (rdc) (s1h)] {};
+	\node [OSI Schicht] (s2) [fit=(nw) (s2h)] {};
+\end{pgfonlayer}
+
+% Label für die OSI-Schichten
+\node [anchor=north west] at (s0.north west) {1 Bitübertragung (Physical)};
+\node [anchor=north west] at (s1.north west) {2 Sicherung (Data Link)};
+\node [anchor=north west] at (s2.north west) {3 Vermittlung (Network)};
+
+% Pfeile rechts
+
+\draw [->] ([xshift=1cm]radio.east) to node [sloped,above] {eingehende Nachricht} ([xshift=1cm]nw.east);
+\draw [<-] ([xshift=2cm]radio.east) to node [sloped,above] {ausgehende Nachricht} ([xshift=2cm]nw.east);
+
+\end{tikzpicture}
+\captionbelow{Contiki NetStack Konzept}
+\label{fig:ContikiNetStackKonzept}
+\end{figure}

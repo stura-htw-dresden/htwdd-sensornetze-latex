@@ -1,0 +1,29 @@
+
+\begin{table}[t]
+\begin{threeparttable}[c]
+\centering
+\caption{Überblick zu den implementierten Treibern in Contiki 2.6}
+	\label{tab:ContikiNetStackDriver}
+\begin{tabular}{lllll}
+	\toprule
+	  \multicolumn{1}{c}{{\theadhll{Network}}}
+	  & \multicolumn{1}{c}{{\theadhll{MAC}}}
+	  & \multicolumn{1}{c}{{\theadhll{RDC}}}
+	  & \multicolumn{1}{c}{{\theadhll{Framer}}}
+	  & \multicolumn{1}{c}{{\theadhll{Radio}}}	\tabularnewline
+	\midrule
+	SicsLoWPAN	& CSMA		& ContikiMAC		& \ieeeframe	& AVR rf230 (bb)\tnote{2}	\tabularnewline
+	RIME		& TDMA\tnote{1}		& X-MAC				& NullMAC	& TI cc2430\,rf				\tabularnewline
+				& CTDMA\tnote{1}	& CX-MAC			& 			& TI cc2530\,rf				\tabularnewline
+				& RIME UDP			& LPP 				& 			& ARM stm32w				\tabularnewline
+				& NullMAC			& NullRDC			& 			& 							\tabularnewline
+				& 					& NullRDC NoFramer	& 			& 							\tabularnewline
+	\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item Die hier vorgestellten Implementationen wurden nicht auf Vollständigkeit getestet.
+\item[1] \acs{TDMA} und \acs{CTDMA} wurden seit Version 2.6.x aus Contiki entfernt \cite{Contiki:GitHub}.
+\item[2] rf\,230\_bb ist die überarbeitete Version des Funkmoduls rf\,230.
+\end{tablenotes}
+\end{threeparttable}
+\end{table}

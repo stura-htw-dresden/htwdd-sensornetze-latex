@@ -1,0 +1,26 @@
+\begin{figure}
+	\centering
+	\begin{tikzpicture}[
+		>=stealth',
+		Geraet/.style={
+			top color=white,
+			bottom color=blue!50!black!20,
+			draw=blue!50!black!50,
+			minimum height=.8cm,
+			rectangle,
+			rounded corners=1mm
+			},
+		]
+	\path (0,0) node [Geraet] (pc) {PC}
+		(pc.east)
+		++(2,0) node [anchor=west, Geraet] (dragon) {AVR-Dragon}
+		(dragon.east)
+		++(2,0) node [anchor=west, Geraet] (atmega) {ATmega128RFA1}
+		;
+	
+	\draw [-] (pc) edge node [font=\tiny,above] {USB} (dragon);
+	\draw [-] (dragon) edge node [font=\tiny,above] {JTAG} (atmega);
+	\end{tikzpicture}
+	\caption{Verkabelung für das Beispielprojekt}
+	\label{fig:app:bsp:schaltung}
+\end{figure}

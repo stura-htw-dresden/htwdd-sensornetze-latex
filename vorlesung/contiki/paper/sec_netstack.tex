@@ -1,0 +1,848 @@
+\label{sec:NetStack}
+	Dieses Kapitel behandelt den \ac{NetStack} und seine
+	Implementationsweise.
+
+	Dieser nimmt in Contiki-OS eine besondere Stellung ein, weswegen die
+	Anfordrungen an den \ac{NetStack} zuerst behandelt werden.  Da die
+	Kommunikation der Sensorknoten untereinander bestimmte Eigenschaften
+	erfordert, werden im folgenden Abschnitt \emph{Grundlagen der
+	Kommunikation in Sensornetzen} vermittelt.  Danach wird das Konzept
+	bzw. der Aufbau des \ac{NetStack}s gezeigt sowie deren Funktionalitäten
+	erläutert.  Zuletzt wird der Ablauf beim Versenden und Empfangen einer
+	Nachricht beispielhaft demonstriert.
+
+
+	Bei der Analyse des Contiki NetStacks ist vor allem der Quelltext von
+	Contiki \autocite{Contiki:GitHub:2.6rc0} analysiert worden, da der
+	Ablauf aus diesem am besten zum Ausdruck kam.  Nichtsdestotrotz
+	existieren auch wissenschaftliche Arbeiten über Teilbereiche des
+	Contiki NetStacks.  Über das \emph{ContikiMAC} Radio Duty Cycling
+	Protokoll findet sich beispielsweise viel Material
+	\autocite{dunkels11contikimac, ko12pragmatic, duquennoy11lossy}.  Aber
+	auch allgemein zur Kommunikation zwischen Sensorknoten wird viel
+	geforscht \autocite{lunden11politecast, dunkels11announcement,
+	durvy08making}.
+
+
+\section{Anforderungen an den \acl{NetStack} in Contiki}
+
+	Da Contiki ein internetfähiges Betriebssystem darstellen soll, benötigt
+	es einen \acl{NetStack}.  Ferner ist Contiki für verschiedene
+	eingebettete Systeme mit unterschiedlichsten Hardware-Ausstattungen
+	gedacht.  Das eine eingebettete System möchte lediglich einen
+	IPv4-Stack benutzen, das andere wiederum einen IPv6-Stack, ein weiteres
+	soll lediglich \emph{Mesh-under-Routing}-Funktionalität bieten.
+
+	Hierzu bietet Contiki einen \acf{NetStack}, der sich flexibel auf
+	verschiedene Bedürfnisse anpassen lässt. Dennoch soll die Flexibilität
+	nicht all zu groß sein, sonst wirkt sich dieses negativ auf die
+	Überschaubarkeit aus.
+
+	Damit dieses Kapitel nicht den Rahmen sprengt, wird lediglich
+	der \acl{NetStack} behandelt, nicht aber die \acs{uIP}-Implementation
+	oder die Routing-Protokolle.
+
+
+\section{Grundlagen der drahtlosen Kommunikation in Sensornetzen}
+
+	Mehrere drahtlos kommunizierende Sensorknoten bilden ein drahtloses
+	Sensornetz (\engl{wireless sensor network}).  Dabei formen die
+	Sensorknoten ein infrastruktur-basiertes oder sich selbst
+	organisierendes Ad-hoc-Netz.  Diese Ad-hoc-Netze sind vermascht
+	(\engl{mesh}), \dhx jeder Knoten ist mit einem oder mehreren anderen
+	Knoten verbunden. Zu übertragene Informationen werden über
+	Sensorknoten, welche Routing-Funktionalitäten (Routing-Knoten)
+	besitzen, weitergereicht, bis diese Informationen ihr Ziel erreicht
+	haben.  Es findet somit eine \emph{Multi-Hop-Kommunikation} statt.  Oft
+	wird ein Sensorknoten zum Coordinator des Sensornetzes ernannt, der
+	dann die Aufgabe hat, das Übertragungsmedium zu organisieren.
+
+	Da es sehr viele Knoten in einem solchen Netz gibt und Anzahl sowie
+	Standorte dieser Knoten variieren können, muss man von einem
+	unvorhersagbaren und dynamischen Verhalten der Knoten ausgehen. Zum
+	einen können neue Knoten während des Betriebes hinzukommen, andere
+	können ausfallen.  Damit ist die Netztopologie nicht sicher, wodurch
+	Netzprotokolle für Sensornetze genau diese Eigenschaft berücksichtigen
+	müssen.
+
+	Aus diesem Grund wird zur Zeit im Bereich Sensornetze zu den
+	Netzprotokollen sehr viel geforscht.
+
+\subsection{Aufgaben der Netzprotokolle}
+\label{sec:AufgabenNetzprotokolle}
+
+	Zusammen mit den Eigenschaften der Sensorknoten muss eine Kommunikation
+	geschaffen werden, die mindestens folgende Aufgaben erfüllt:
+
+	\begin{itemize}
+	\item 	Daten so effizient wie möglich übermitteln
+	\item 	Energiereserven der Sensorknoten schonen, \dhx
+		(batteriebetriebene) Knoten sollten möglichst lange
+		Schlafzeiten haben
+	\item 	energieintensive Bauteile wie den Funksensor so oft wie
+		möglich ausschalten
+	\item 	bei Ausfall von Routing-Knoten Alternativwege verwenden,
+		sofern vorhanden
+	\item 	Daten vorhalten, bis Ziel erreichbar ist
+	\item 	klassische Kommunikationsprobleme in Rechnernetzen
+		auf ein Minimum reduzieren
+	\end{itemize}
+
+	Da man nicht allen Aufgaben gerecht werden kann, gilt es Netzprotokolle
+	zu finden, die ein Optimum für die jeweiligen Systemanforderungen
+	darstellen.  Beispielsweise besitzt ein Sensornetz zur
+	Hausautomatisierung andere Systemanforderungen als ein Sensornetz, das
+	die Kommunikation innerhalb eines Roboterschwarms sicher stellt.
+
+	Das Verhalten der Netzknoten lässt sich dabei in vier Schritte
+	gliedern: Initialisierung, Tagesablauf, Kommunikationsschema sowie
+	Routing.
+
+	\begin{description}
+
+	\item[Initialisierung]
+		Neue Netzknoten integrieren sich in das Sensornetz, indem
+		sie ihre Nachbarn detektieren. Die Netztopologie wird verändert.
+		Hierbei ist ein Verfahren gefordert, welches ein erfolgreiches Routing
+		verspricht.
+
+	\item[Tagesablauf]
+		Der Wach-Schlaf-Zyklus (\engl{duty cycle}) bestimmt
+		den Tagesablauf eines (batteriebetriebenen) Netzknotens.
+		Das Ziel des \emph{Duty-Cycling} ist es,
+		möglichst lange Schlafzeiten zu erreichen.
+		Wenn benachbarte Knoten eines Senders beteiligt werden,
+		obwohl sie nicht Empfänger der Nachricht sind,
+		spricht man von \emph{Overhearing}.
+		Overhearing ist in Sensornetzen zu vermeiden, weil das Mithören
+		Zeit und Energie kostet. Es gibt in der Forschung Bestrebungen,
+		Duty-Cycling und Overhearing sinnvoll zu verbinden:
+		\citetitle{Thesis:VereinbarkeitRDCOverhearing} \autocite{Thesis:VereinbarkeitRDCOverhearing}.
+
+	\item[Kommunikationsschema]
+		Dieses Schema beschreibt, wie ein einzelner Datenaustausch zwischen
+		zwei Sensorknoten abläuft, wobei die Übertragungsgeschwindigkeit
+		und auch Fehlerfreiheit wichtige Kriterien sind. Zusätzlich dürfen sich
+		die Netzknoten nicht gegenseitig stören.
+
+	\item[Routing]
+		Im Gegensatz zum Kommunikationsschema beschreibt Routing den Pfad durch das
+		Sensornetz vom Sender zum Empfänger. In einem vermaschten Netz können dazu
+		mehrere Pfade existieren. Das Ziel des Routings sollte vor allem die
+		ausgewogene Netzauslastung sein, \dhx es muss nicht immer der kürzeste Pfad
+		gewählt werden, sonst kann es zur einseitigen Netzbelastung und sogar zum
+		Ausfall wichtiger Netzknoten kommen.
+
+	\end{description}
+
+\subsection{Unterschied zu herkömmlichen Netzprotokollen}
+
+	Untersuchungen haben gezeigt, dass herkömmliche Netzprotokolle wie
+	\emph{IEEE 802.11} oder \acs{CSMA} die Lebensdauer der Netzknoten stark
+	herabsenkt:
+
+	In herkömmlichen Netzprotokollen wird erwartet, dass ein Empfänger
+	ständig empfangsbereit ist. \emph{Nutzloses Mithören} (\engl{idle
+	listening}) am Medium verschwendet viel Energie, weil der Sensorknoten
+	während dieser Zeit nicht schlafen kann.  Wenn eine \emph{Kollision}
+	auftritt und damit das Paket erneut übertragen wird, steigt der
+	Energieverbrauch und auch die Latenz, insbesondere, wenn es sich um ein
+	großes Paket handelt.  Auch ist der \emph{Overhead durch
+	Kontrollpakete} gering zu halten, da Kontrollpakete keine Sensordaten
+	enthalten und alle Sensorknoten ein gemeinsames Primärziel verfolgen.
+
+	Aufgrund der Anforderung, dass ein Sensornetz ein Gesamtziel verfolgt,
+	hebt es sich zusätzlich von anderen Ad-hoc-Netzen ab.  Es existieren
+	somit nicht viele verschiedene Anwendungen, die um die gemeinsame
+	Ressource, den \emph{Übertragungskanal}, konkurrieren, sondern nur eine
+	einzige. Anders formuliert bedeutet dieses, dass die
+	Sensornetz-Anwendung quasi mit sich selbst konkurriert.  Damit besteht
+	nur ein geringes Bestreben, Fairness zwischen allen Netzknoten zu
+	erreichen.
+
+
+	% MAC und Low-Power-MAC bzw. RDC
+	% Routing
+
+	% 802.15.4
+	% 6LoWPAN
+	% ??
+
+\section{Konzept des Contiki NetStacks}
+
+	Da ein eingebettetes Betriebssystem wie Contiki-OS auf
+	unterschiedlichsten Sensor-Platformen sowie unterschiedlichsten
+	Bedürfnissen an den \acf{NetStack} zum Einsatz kommen soll, wurde auf
+	ein flexibles \acl{NetStack}-System Wert gelegt.
+
+	Vor allem die unteren, transportorientierten Schichten des
+	OSI-Schichtenmodells sind entscheidend, um das Sensorsystem optimal an
+	die Systemanforderungen anzupassen.  Diese transportorientierten
+	Schichten lösen die Aufgaben des Netzprotokolls, die in
+	\autoref{sec:AufgabenNetzprotokolle} beschrieben sind.
+
+	\begin{description}
+	\item[Bitübertragungsschicht]
+		Die physikalische Schicht (Bitübertragungsschicht)
+		steuert den Funksensor (Radio) an
+		und nennt sich \emph{Radio~Driver}.
+
+	\item[Sicherungsschicht]
+		Über der physikalischen Schicht befindet sich
+		die \emph{Data~Link}-Schicht (Sicherungsschicht).
+		Beide Schichten steuern den Zugriff auf das Übertragungsmedium.
+
+		Die zu versendenen und empfangenen Nachrichten werden häufig in
+		Frames gepackt, welche Größe und weitere Eigenschaften der
+		Nachricht in einem Header speichern. Hierzu kommt in Contiki
+		der Framer zum Einsatz.
+
+		Die Sicherungsschicht besteht wiederum aus den Schichten
+		\ac{LLC} und \ac{MAC}:
+		\begin{description}
+		\item[\acf{MAC}]
+			Da in eingebetteten Systemen die Energieeffizienz
+			besonders wichtig ist, wurde das \ac{MAC}-Protokoll in
+			zwei Ebenen eingeteilt:
+
+			Der untere Layer ist für den \acf{RDC} verantwortlich
+			und sorgt damit für das Sparen der Energie.
+
+			Der obere ist für die Steuerung des Zugriffs
+			auf das Übertragungsmedium zuständig.
+
+		\item[\acf{LLC}]
+			Für die \acs{LLC}-Schicht ist in Contiki kein separate
+			Ebene bereitgestellt worden.
+
+			Einige Netzwerk-Stacks wie das ZigBee Protocol
+			benötigen die \acs{LLC}-Schicht nicht, weil eine
+			leichtgewichtige Netzwerkarchitektur gefordert war.
+
+			Das \acf{SP} nutzt einen \acs{SP}-Adaption Sublayer,
+			der sich im Prinzip auf der selben Höhe der
+			\acs{LLC}-Schicht befindet. Dadrüber befindet sich das
+			\acl{SP}, welches als eine \emph{Bridge} angesehen
+			werden kann, um eine Koexistenz mehrerer
+			Netzwerk-Protokolle zu erreichen.
+			\autocite{he2007implSPforContiki}
+		\end{description}
+
+	\item[Vermittlungsschicht]
+		Die dritte OSI-Schicht ist die Netzwerk-Schicht
+		(Vermittlungsschicht) und stellt auch in Contiki
+		netzübergriefende Adressen bereit und organisiert das Routing
+		zwischen Netzknoten.
+	\end{description}
+
+	Zusammenfassend gliedert sich die Implementation des \emph{Contiki
+	NetStacks} in folgende fünf Schichten (\engl{layer}): Radio Driver,
+	Framer, RDC Driver, MAC Driver und Network Driver.  Ein Vergleich
+	zwischen dem OSI-Referenzmodell und den Contiki NetStack Schichten ist
+	in \autoref{fig:ContikiNetStackKonzept} zu sehen.
+
+\input{fig/ns_konzept}
+
+	Da der \acl{NetStack} in fünf voneinander losgelösten Schichten
+	konzipiert ist, die über vorgegebenen APIs miteinander kommunizieren.
+	Dadurch ist die Implementation einer Schicht von den anderen Schichten
+	unabhängig austauschbar und der \emph{Contiki NetStack} flexibel auf
+	unterschiedliche Anwendungen anpassbar.
+
+	Alle über der Netzwerk-Schicht liegenden Schichten sind nicht direkt
+	Teil des \acl{NetStack}s, da sich ihre Implementationen sehr stark
+	unterscheiden und damit keine sinnvolle API gebildet werden kann.
+
+	Bei der Erstellung des anwendungsspezifischen \acl{NetStack}s müssen
+	die verwendeten Protokolle auf Kompatiblität zueinander geprüft werden.
+	Auch ist es sinnvoll, alle Netzknoten eines Sensornetzes mit dem
+	gleichen \acl{NetStack} auszustatten.
+
+\section{Funktionsweise}
+
+	In diesem Abschnitt wird jeder der fünf Contiki Netzwerkschichten und
+	ihre Aufgaben beschrieben. Ziel ist es hierbei, ein Verständnis für den
+	Aufgabenumfang eines Treibers im Contiki NetStack zu entwickeln.
+
+	Im folgenden \autoref{sec:NetStack:SendenEmpfangen} wird dann am
+	Beispiel eines konkreten Contiki NetStacks das Empfangen und Versenden
+	einer Nachricht demonstriert.
+
+\subsection{Radio Driver}
+\label{sec:NS:Funktionsweise:RadioDriver}
+
+	Der Radio Driver steuert den Funksensor an und ist im Allgemeinen für
+	das Senden und Empfangen von Nachrichten zuständig.
+
+	Der Funksensor ist dabei entweder direkt im Mikrocontroller integriert
+	(1-Chip-Lösung) oder über ein allgemeines Interface am Mikrocontroller
+	angeschlossen (2-Chip-Lösung).  Daher ist ein Radio Driver keine CPU-
+	oder platformunabhängige Implementation.
+
+	Die meisten Hersteller von Funksensoren implementieren einen größeren
+	Funktionsumfang, als es nötig wäre. So können bestimmte
+	Funk-Funktionalitäten, wie das automatische Senden eines Ack-Signal zur
+	Mitteilung des Erhalts eines Pakets, an die Hardware übergeben werden.
+	So muss dieses nicht in der Software gelöst werden, was zur Folge hat,
+	dass Funksensoren \iA für bestimmte Standards ausgelegt sind:
+
+	Der Funksensor \emph{AT86RF230} ist beispielsweise besonders für die
+	Standards \ieeeframe, ZigBee, 6LoWPAN (und weitere) geeignet.  Er
+	besitzt einen besonderen \emph{\ieeeframe-2003 Hardware Support} und
+	erleichert die Software um folgende Funktionalitäten:
+
+	\begin{itemize}
+	\item 	\acf{CCA},
+	\item 	Energy Detection,
+	\item 	Berechnung der \acl{FCS} (\acs{FCS}, \acs{CRC}),
+	\item 	automatisches \acs{CSMA/CA},
+	\item 	automatische, erneute Übertragung eines Frames,
+	\item 	automatisches Bestätigen des Erhalts eines Frames (ACK-Signal),
+	\item 	automatisches Filtern von Adressen.
+	\end{itemize}
+
+	Das Umsetzen solcher Funktionalitäten auf der Hardwareebene erfordert
+	einen besonderen Umgang im Netzwerk-Stack.  Höhere Schichten müssen
+	herausfinden, ob diese Funktionalitäten auf der Hardware umgesetzt
+	werde können.  In C können hierzu einfach Makros verwendet werden,
+	welche con Contiki auch genutzt werden, um einzelne Hardwarefunktionen
+	zu aktivieren.
+
+\subsection{Framer}
+
+	Bei eingehenden Nachrichten hat der Framer die Aufgabe, den Payload der
+	Nachricht vom Frame zu separieren sowie die Informatonen, die im Frame
+	stecken, lesbar in einem Nachrichten-Puffer für die Netzwerk-Schichten
+	aufzubereiten.
+
+	Im Framer selbst werden diese Informationen nicht verarbeitet.  Dies
+	geschieht dann in den jeweilig zuständigen Schichten.
+
+	Bei ausgehenden Nachrichten werden die Informationen, die die
+	Netzwerk-Schichten im Nachrichten-Puffer vorbereiet haben, in ein Frame
+	verpackt, so dass der Framer des Empfängers diese Informationen lesen
+	kann.  Daher ist es wichtig, auf allen Netzknoten denselben Framer zu
+	verwenden.
+
+	Deswegen wurde in Bezug auf Sensornetze der Standard \ieeeframe{}
+	entwickelt, um einen einheitlichen Nachrichtenaustausch (auf den
+	unteren zwei Netzwerk-Schichten) sicherzustellen.  Da \ieeeframe{}
+	sowohl auf der Bitübertragungsschicht sowie auf der Sicherungsschicht
+	arbeitet, muss der Framer eng mit der \acs{MAC}-Schicht sowie der
+	\acs{RDC}-Schicht zusammenarbeiten.
+
+\subsection{RDC Driver}
+	Der Radio Duty Cycling Driver kümmert sich darum, dass der Funksensor
+	\idR nicht länger als nötig in Betrieb ist.  Der Funksensor wird also
+	so oft wie möglich aus- und zu entsprechenden Zeiten wieder
+	eingeschaltet.
+
+	Um einen energiesparsamen Betrieb zu gewährleisten und um regelmäßig
+	emfangsbereit zu sein, gibt es in der Forschung viele Protokollansätze,
+	die unter dem Begriff Radio Duty Cycling Protokolle oder auch Low Power
+	MAC Protokolle fassen kann.  Einige dieser Ansätze sind nur in
+	bestimmten Sensornetzanwendungen sinnvoll, weshalb es in Contiki für
+	diese Funktionalität eine extra Netzwerk-Schicht, die RDC-Schicht,
+	gibt.
+
+	Der RDC Driver liegt folglich zwischen dem Radio Driver und dem MAC
+	Driver. Weil der Radio Driver hardwareabhängig implementiert ist und
+	der RDC Driver hardwareunabhängig, ist es sinnvoll, dass der RDC Driver
+	den Framer anweist, das Nachrichtenpaket zu parsen oder in eine Frame
+	zu verpacken.
+
+	In Contiki gibt es für den RDC Driver verschiedene implementierte
+	Protokolle: Eines dieser so genannten Low Power MAC-Protokolle ist
+	ContikiMAC, welches \iA in Contiki als Standardpotokoll verwendet wird.
+	Es befindet sich in Contiki aber auch ein Protokoll, das das \acf{LPP}
+	umsetzt, sowie das weiter verbreitete X-MAC und die kompaktere Variante
+	CX-MAC.
+
+	Im Gegensatz zu den Low Power MAC-Protokollen gibt es in Contiki auch
+	Implementierungen, die keinen Radio Duty Cycle verwenden: In diesem
+	Bereich ist die NullRDC Implementierung die aktuellste.  Gleichfalls
+	existiert eine Variante, welche weder einen RDC verwendet noch einen
+	Framer einsetzt: der NullRDC NoFramer.
+
+	Bei diesen (einfachen) Protokollen bleibt der Funksensor \iA dauerhaft
+	eingeschaltet, wodurch kein energieeffizientes Arbeiten sichergestellt
+	ist.  Deshalb sind diese nicht auf Energieeffizienz bedachten
+	Protokolle nur bei einem \ac{FFD} einzusetzen, da sie \idR nicht
+	batteriebetrieben sind. Ein \ac{RFD} unterscheidet sich dadurch vom
+	\ac{FFD}, dass es nicht den vollen standardisierten Funktionsumfang
+	bieten muss, wodurch allerdings keine Kommunikation mit einem anderen
+	\ac{RFD} möglich ist.
+
+	Allgemein gewinnen in der Informatik energiebewusste Technologien immer
+	mehr an Bedeutung, wodurch ein Radio Duty Cycle auch bei einem
+	\acl{FFD} eingesetzt werden sollte.
+
+\subsection{MAC Driver}
+	Der MAC Driver setzt die Anforderungen der MAC-Schicht um, \dhx er muss
+	sich um die Organisation des Übertragungsmediums kümmern.  Hierbei ist
+	es sinnvoll die Funktionalitäten des Radio Drivers einzubeziehen, um
+	bereits in Hardware implementierte Funktionen zu verwenden.
+
+	In Sensornetzen mit batteriebetriebenen Netzknoten wird es immer wieder
+	vorkommen, dass Netzknoten nicht erreichbar sind, weil sie gerade
+	schlafen.  Diese Schlafzyklen werden schließlich vom RDC Driver
+	bestimmt, so dass dieser der MAC-Schicht Informationen zukommen lassen
+	kann, wie die eigenen Schlafzyklen sich verhalten.
+
+	Aber er kann auch schätzen, wie sich das Schlafverhalten der anderen
+	Netzteilnehmer verhält, da man \idR davon ausgehen kann, dass alle
+	Netzteilnehmer das gleiche RDC-Protokoll verwenden.  Hieraus kann der
+	MAC Driver bestimmen, wann es sinnvoll ist -- unter Einhaltung der
+	Funk-Zeiten des MAC-Protokolls --, dem Empfänger die Nachricht zu
+	schicken.
+
+	So kann in Zusammenarbeit mit dem RDC Driver, die Funkkommunikation auf
+	ein Mindestmaß reduziert werden.
+
+	Auf der anderen Seite arbeitet der MAC Driver mit dem Network Driver
+	zusammen: Dieser nimmt zum einen von Network Driver zu versendene
+	Nachrichtenpakete entgegen und leitet sie zu bestimmten Zeiten an den
+	RDC Driver weiter.  Zum anderen werden empfangene Nachrichten an den
+	Network Driver weitergeleitet, sofern die empfangenen Nachrichten für
+	den eigenen Netzknoten bestimmt sind.
+
+\subsection{Network Driver}
+
+	Der Netzwerk Driver stellt die Funktionalität der Vermittlungsschicht
+	bereit. Hierzu zählt insbesondere das Bereitstellen von
+	netzwerkübergreifender Adressen, das Routing und Verwalten von
+	Routingtabellen -- sofern gewünscht -- sowie allgemein der Aufbau von
+	Paketen.
+
+	Da Nachrichten länger als die im Framer festgelegte, maximale Breite
+	sein können, müssen diese Nachrichten in Fragmente unterteilt werden.
+	Das Einteilen in Fragmente, sofern erforderlich, sowie das
+	Zusammenfügen einer Reihe von empfangener Fragmente übernimmt der
+	Network Driver.
+
+	Hierzu bietet sich in Contiki der weit verbreitete Standard
+	\acs{6LoWPAN}.  Eine Alternative ist der RIME Stack.  der einen Satz
+	leichtgewichtiger Kommunikationsprimitiven bietet: von
+	\emph{best-effort anonymous local area broadcast} bis hin zu
+	\emph{reliable network flooding} \autocite{dunkels07adaptive}.
+
+\input{tbl/ns_treiber}
+%\input{tbl/ns_treiber2}
+
+
+\section{Senden und Empfangen von Nachrichten}
+\label{sec:NetStack:SendenEmpfangen}
+
+	Mit der Entwicklung von IPv6 ist es möglich geworden, jedem Gerät
+	(\emph{Ding}\,) eine eigene Internet-Adresse zu geben.  Das
+	\emph{Internet der Dinge} (\engl{Internet of Things}) ermöglicht also,
+	das komplette Sensornetz mit dem Internet zu verbinden.  Dieses
+	Sensornetz wird dann zum \emph{Wireless Embedded Internet}.
+
+	Damit die Anbindung möglichst transparent ist, wurde versucht, IPv6 auf
+	Sensorknoten zu implementieren.  Da aber das komplette Internet
+	Protokoll sehr umfangreich ist, wäre der Energieverbrauch und auch der
+	Speicherplatzbedarf der Implementierung drastisch gestiegen.  Daher
+	wurde eine leichtgewichtige Variante des IPv6 entwickelt:
+	\acf{6LoWPAN}.
+
+	Da dieses Protokoll sich weitgehend durchgesetzt hat, wird das Senden
+	und Empfangen von Nachrichten anhand der \acs{6LoWPAN}-Implementierung
+	erläutert.  Um genauer zu sein, wird der in
+	\autoref{tab:ContikiNetStackExample} gezeigte \acl{NetStack}
+	betrachtet.
+\input{tbl/ns_example}
+
+
+\subsection{Empfangen einer 6LoWPAN-Nachricht}
+
+\minisec{Radio Driver}
+
+	Jeder Empfang einer Nachricht wird mit einem Interrupt beim
+	AVR-Mikrocontroller eingeleitet. Dadurch weiß der Radio Treiber
+	rf230~bb, dass im Nachrichten-Puffer des Funksensors die Nachricht zum
+	Lesen bereitliegt.
+
+	In Contiki ist es sinnvoll, hierfür einen Prozess zu erstellen, der
+	sich um den Empfang und die weitere Verarbeitung der Nachricht kümmert.
+	Die \ac{ISR} pollt diesen Prozess, wodurch der Interrupt möglichst
+	schnell verlassen wird und die CPU für andere wichtige Aufgaben wieder
+	zur Verfügung steht.
+
+	Sobald der Empfangsprozess an der Reihe ist, wird der Paket-Puffer
+	geleert und das Paket aus dem Nachrichten-Puffer des Funksensors in den
+	Paket-Puffer gelesen.
+
+	Die \lstinline=read=-Operation ist ein kritischer Abschnitt, in welchem
+	Interrupts kurzfristig deaktiviert werden müssen.  Damit wird
+	verhindert, dass die \ac{ISR} nicht den gleichen Puffer beschreibt, von
+	dem gerade gelesen werden soll.
+
+	Nun wird die \ac{RDC}-Schicht über die Ankunft einer neuen Nachricht
+	mittels \lstinline=input=-Callbacks informiert.
+
+
+\minisec{RDC Driver}
+
+	Nach \autoref{tab:ContikiNetStackExample} kommt nun die
+	X-MAC-Implementation zum Einsatz. Der \lstinline=input=-Callback ruft also
+	die Funktion \lstinline=input_packet= auf.
+
+	Diese Funktion muss zuerst die empfangene Nachricht parsen, weshalb nun
+	der Framer zum Einsatz kommt.
+
+	Wenn man beispielsweise den RDC Driver \emph{NullRDC NoFramer}
+	verwendet, dann erwartet der Empfänger, dass die Nachricht -- wie der
+	Name besagt -- in keinem Frame-Format vorliegt.
+
+\medskip
+
+	Nach dem Parsen der Nachricht durch den Framer untersucht der Empfänger
+	mit Hilfe eines Packet Dispatchers, um welche Art von Paket es sich
+	handelt:
+
+	Im Falle von X-MAC kann dies ein Strobe-, ein Strobe-ACK-, ein
+	Announcement- oder Data-Paket sein: Letzteres beinhaltet die
+	eigentliche Nachricht und die ersten drei koordinieren den
+	Datenaustausch zwischen zwei Sensorknoten.
+
+	Wann welches Paket verschickt wird und wie der Schalf-Rhythmus
+	aussieht, wird im Kommunikationsschema festgelegt.
+
+	Wenn der Paket-Typ festgestellt wurde, wird bei einigen Paket-Typen die
+	Zieladresse überprüft. Wenn diese nicht mit unserer übereinstimmt oder
+	die Nachricht kein Broadcast war, so wird das Paket ebenfalls
+	verworfen.
+
+	\begin{description}
+	\item[Data-Paket]
+		Bei einem Data-Paket wird die Sequenznummer mit den letzten
+		paar empfangenen Paketen verglichen, damit doppelte Pakete
+		sofort verworfen werden können. Außerdem wird der Funksensor
+		deaktiviert, um Energie zu sparen.  Sobald das Paket
+		verarbeitet wurde, kann der gesamte Mikrocontroller sich
+		schlafen legen.
+
+	\item[Strobe-Paket]
+		Bei einem Strobe-Paket ohne Empfängeradresse wird bei X-MAC
+		davon ausgegangen, dass ein Broadcast-Paket folgt, so dass in
+		diesem Fall der Funksensor aktiv bleibt bzw. angeschaltet wird.
+
+	\item[Announcement-Paket]
+		Da regelmäßige Beacon-Pakete sehr energieaufwändig sind, um ein
+		Sensornetz zu organisieren, ist die Idee eines Announcemnt
+		Layers \autocite{dunkels11announcement} entstanden.  Hierbei
+		werden vor allem mehrere Beacons in einem Announcement-Paket
+		gesammelt, um die Anzahl der Übertragungen zu minimieren und
+		somit Energie zu sparen.
+
+		Dieses Feature kann auch bei X-MAC in Contiki aktiviert werden,
+		ist für diese Betrachtung aber nicht relevant.
+	\end{description}
+
+	Da bei RDC Protokollen -- auch \emph{Low power MAC-Protokolle}
+	genannt -- \idR davon ausgegangen wird, dass sowohl Empfänger
+	als auch Sender das gleiche Protokoll verwenden, ist es
+	ausreichend, nur Data-Pakete an den eigentlichen MAC Driver
+	weiterzureichen.
+
+	Es ist durchaus denkbar, dass weitere Eigenschaften an höhere
+	Schichten weitergegeben werden können -- wie beispielsweise der
+	akkumulierte Energieverbrauch beim Senden und Empfangen.
+
+
+\minisec{Framer}
+	Nach \autoref{tab:ContikiNetStackExample} ist der
+	\emph{Framer\,802.15.4} verwendet worden.  Der Empfanger erwartet
+	folglich, dass die Nachricht im \ieeeframe-Format vorliegt.
+
+	Der Parser stellt fest, ob die PAN-ID in der Nachricht der eigenen
+	entspricht oder ob es sich um eine Broadcast-PAN-ID handelt.
+
+	Wenn die Nachricht nicht die eigene oder die Broadcast-PAN-ID enthält,
+	wird das Paket verworfen.
+
+	Andernfalls ist die Nachricht entweder für das
+	PAN-Netzwerk\footnote{Nach \ieeeframe{} wird die PAN-ID dazu benutzt,
+	um das Netzwerk in unterschiedliche Cluster einzuteilen.  Jeder Cluster
+	hat seinen eigenen PAN-Coordinator. Daneben gibt es noch einen
+	First-PAN-Coordinator, der alle Cluster koordiniert.} bestimmt oder es
+	handelt sich um einen Broadcast.  In beiden Fällen wird der
+	Paket-Puffer mit den in der Nachricht befindlichen Informationen
+	gefüllt: Hierzu zählt die Adresse des Senders und Empfängers, die
+	Paket-ID sowie ein Prending-Flag.
+
+	Nun wird die Länge des \ieeeframe-Overheads\footnote{Die Länge des
+	\ieeeframe-Overheads errechnet sich durch die Länge der Nachricht minus
+	der Länge des Payload.} an den RDC Driver zurückgegeben, damit dieser
+	sofort entsprechende Maßnahmen ergreifen kann, falls die Länge des
+	Overheads nicht dem Standard entspricht oder ein Fehler aufgetreten
+	ist.
+
+\minisec{MAC Driver}
+	Beim Empfangen einer Nachricht hat der CSMA MAC Driver nicht viel zu
+	tun: Er nimmt lediglich die Information vom RDC Driver entgegen, dass
+	eine Nachricht eingegangen ist und leitet diese direkt an die
+	Netzwerk-Schicht weiter.
+
+\minisec{Network Driver}
+	Der Network Driver \emph{SicsLoWPAN} kann nun das \acs{6LoWPAN}-Paket
+	verarbeiten und im Falle einer fragmentierten Nachricht den kompletten
+	Nachrichten-Payload wieder zusammensetzen.  Das Fragmentieren und
+	Wiederzusammensetzen ist die Aufgabe des \acs{6LoWPAN}-Adaptation
+	Layers, welcher damit in den Network Driver integriert ist.
+
+	Sofern ein Prozess einen Callback hinterlegt hat, so wird dieser Prozes
+	nun über eine neue, eingehende Nachricht informiert, Danach wird der
+	TCP/IP-Prozess benachrichtigt, indem die \lstinline=tcpip_input=-Funktion
+	ein \event{PACKET\_INPUT}-Event beim TCP/IP-Prozess erzeugt.
+
+\minisec{Höhere Schichten}
+	Die Netzwerk-Schicht hat damit die Kontrolle über das Paket an die
+	Transport-Schicht abgegeben, welche wiederum die jeweiligen
+	Anwendungsschichten informiert.
+
+	Beispielsweise könnte ein Sender dem Empfänger eine Nachricht mittels
+	\acs{UDP} an den Port der \acs{CoAP}-Anwendung geschickt haben.
+
+
+\subsection{Versenden einer 6LoWPAN-Nachricht}
+
+\minisec{Höhere Schichten}
+	Angenommen wir haben eine Anwendung, die das \acf{CoAP} verwendet.
+	Dann möchte diese Anwendung mittels UDP eine Nachricht versenden.
+
+	Mittels der Funktion \lstinline=uip_udp_packet_send= wird eine
+	CoAP-Nachricht an einen bestimmten Port eines anderen Netzknoten
+	gesendet.  Wenn IPv6 aktiviert ist, dann wird
+	\lstinline=tcpip_ipv6_output= aufgerufen, welche die Nachricht an den
+	Network Driver über einen Callback weitergibt.
+
+	Dieser Callback wird beim Initialisieren des Network Drivers übergeben:
+	Die TCP/IP-Schnittstelle definiert den Callback \lstinline=outputfunc=,
+	welcher mit der Funktion \lstinline=output= des Network Drivers
+	\acs{6LoWPAN} verbunden ist.
+
+\minisec{Network Driver}
+	Der \acs{6LoWPAN}-Network Driver nimmt mit Aufruf der Funktion
+	\lstinline=output= das IP-Paket entgegen und formatiert es so, dass es über
+	ein \ieeeframe-Netzwerk versendet werden kann, wobei das IP-Paket in
+	Fragmente aufgeteilt wird, sofern dies nötig ist.
+
+	Jedes zu versendene \acs{6LoWPAN}-Paket wird in den Paket-Puffer
+	geschrieben und mittels der Funtkion \lstinline=send_packet= versendet,
+	wobei der MAC Driver über das zu versendene Paket informiert wird.  Mit
+	dem Versand wird ebenfalls der Callback \lstinline=packet_sent= übergeben,
+	damit der Network Driver Bescheid bekommt, ob die Nachricht erfolgreich
+	versendet wurde oder nicht.
+
+\minisec{MAC Driver}
+	Der \acs{CSMA}-MAC Driver nimmt die Nachricht mit dem gleichnamigen
+	Aufruf \lstinline=send_packet= entgegen.
+
+	Das \acs{CSMA/CA}-Verfahren hat die Aufgabe, die Belegung des Funkkanal
+	zu überwachen und so mögliche Kollisionen vorzubeugen.
+
+	Sobald eine Nachricht versendet werden soll, soll laut dem
+	\ieeeframe-Standard das \acs{CSMA/CA}-Verfahren bereits vor dem ersten
+	Kanaltest eine zufällige Zeit (\emph{Random-Backoff}\,)
+	gewartet werden.  Sofern der Kanal frei ist,
+	kann die Nachricht versendet werden, ansonsten muss wieder gewartet
+	werden.
+
+	Im Falle eines Broadcast-Pakets wird in der Implementation das Paket
+	einfach versendet und damit mittels \lstinline=NETSTACK_RDC.send= an den
+	RDC Driver übergeben.
+
+	Das direkte Übergeben des Pakets hat zur Folge, dass die Steuerung der
+	Backoff-Zeit in den unteren Schichten erfolgen muss: Das Funkmodul
+	\emph{ATmega128RFA1} von AVR implementiert einige der
+	\acs{CSMA/CA}-Funktionalitäten hardwareseitig. Damit sind diese
+	Funktionalitäten im Radio Driver untergebracht.
+
+	Falls kein Broadcast-Paket versendet werden soll, so wird in der
+	\acs{CSMA}-Implementation für den Empfänger eine Paket-Warteschlange
+	angelegt, sofern diese noch nicht existiert, und das Paket in diese
+	Warteschlange eingereiht. Jeder Empfänger besitzt seine eigene
+	Paket-Warteschlange, weshalb es vorkommen kann, dass zum Anlegen des
+	Puffers für einen bestimmten Empfänger nicht genügend Speicherplatz
+	existiert und deshalb ein Paket verworfen werden muss. Nachdem Pakete
+	versendet wurden, wird der Speicherplatz für die entsprechende
+	Warteschlange auch wieder freigegeben.
+
+	Falls es sich bei dem hinzugefügten Paket um das erste in der
+	Warteschlange handelt, so wird ein Timer mit Ablaufzeit \(0\) gesetzt.
+	Dieser Timer ruft bei Ablauf die Funktion \lstinline=transmit_packet_list= mit der
+	Warteschlange des Empfängers als Parameter auf.  Diese Funktion
+	versendet dann das Paket, indem der RDC Driver mittels
+	\lstinline=send_list= informiert wird.
+
+	Hierbei wird zugleich ein MAC-Callback \lstinline=packet_sent= übergeben,
+	damit der MAC Driver über das erfolgreiche Versenden informatiert
+	werden kann.  Der MAC-Driver übergibt \iA also nicht den Callback des
+	Netzwerk-Drivers, da der MAC-Driver selbst weitere Schritte einleiten
+	könnte, sofern ein Paket aus irgendeinen Grund nicht den Empfänger
+	erreicht hat.
+
+%\todo{erst RDC-Schicht erklären?}
+\medskip
+
+	Sobald die Übertragung der Paketliste in der RDC-Schicht beendet wird,
+	wird der MAC-Schicht mitgeteilt, ob die Übertragung erfolgreich war.
+	Im einfachen Fall einer erfolgreichen Übertragung wird der
+	Netzwerk-Schicht diese Information weitergeleitet.  Falls doch ein
+	Fehler aufgetreten ist, so können weitere Schritte eingeleitet werden,
+	um das Paket erneut zu senden.
+
+	Wie in \autoref{sec:AufgabenNetzprotokolle} erklärt, müssen
+	batteriebetriebene Sensorknoten Schlafzeiten einhalten, um eine lange
+	Lebensdauer zu garantieren.  Auf Grund dieser Tatsache kann es
+	vorkommen, dass der Sender den (batteriebetriebenen) Empfänger nicht
+	erreichen konnte, weil jener geschlafen hat.
+
+	Da der Empfänger di Nachricht nicht erfolgreich angenommen hat, wird
+	nach \acs{CSMA/CA} eine zufällige Backoff-Zeit gewartet, nach der das
+	Paket erneut gesendet werden kann. Dies soll verhindern, dass
+	fehlerhafte Übertragungen den Funkverkehr blockieren.
+
+	An dieser Stelle kann die MAC-Schicht einen eigenen, bedingt zufälligen
+	Backoff-Timer ermitteln, damit das Schlafverhalten des Empfängers
+	berücksichtigt wird. Hierzu wird der im RDC Driver verwendete Radio
+	Duty Cycle (\lstinline=NETSTACK_RDC.channel_check_interval=) ausgelesen.
+	Sofern der RDC kein Channel-Check-Intervall definiert, benutzt die
+	\acs{CSMA}-Implementation die Channel-Check-Rate als
+	Berechnungsgrundlage.
+
+
+\minisec{RDC Driver}
+	Mit dem Aufruf von \lstinline=NETSTACK_RDC.send_list= oder
+	\lstinline=NETSTACK_RDC.send= wird das Versenden einer Nachricht
+	eingeleitet.  Der RDC Driver \emph{X-MAC} verwendet hierzu die interne
+	Funktion \lstinline=send_packet=, in welcher ein X-MAC-Header erzeugt und
+	dem Payload hinzugefügt wird.  Nun wird der Framer informiert, dass
+	eine Nachricht in ein Frame verpackt werden muss.
+
+\medskip
+
+	Nach dem Erzeugen des \ieeeframe-Frames leitet der RDC Driver weitere
+	Schritte ein, damit die Nahricht versendet werden kann.
+
+	Je nach Konfiguration des \emph{X-MAC} kann beispielsweise ein
+	Broadcast-Strobe-Paket zur Signalisierung einer bevorstehenden
+	Broadcast-Nachricht versendet werden.  Gleiches könnte für normale
+	Nachrichten verwendet werden, um uninteressierten Empfängern
+	mitzuteilen, dass sie die nächste Nachricht nicht empfangen müssen.
+
+	Es können auch verschiedene Optimierungen eingeschaltet sein, die den
+	Schlafzyklus der anderen Teilnehmer beobachten und schätzen, womit der
+	Energieverbrauch bei der Übertragung verbessert werden kann.
+
+\medskip
+
+	Mit dem Aufruf von \lstinline=NETSTACK_RADIO.send= kann der Versand der
+	Nachricht schließlich eingeleitet werden.  Alternativ können auch die
+	Funktionen \lstinline=prepare= und \lstinline=transmit=\footnote{Der Vorteil der
+	zweiten Methode wird beim Radio Driver erklärt.} des Radio Drivers
+	benutzt werden.
+
+\minisec{Framer}
+	Der Ablauf des Framers ist im Gegensatz zu den anderen Schichten nicht
+	spannend, denn er baut lediglich den \ieeeframe-Frame zusammen:
+
+	Als erstes wird das Frame-Control-Frame (FCF) zusammengesetzt, wobei
+	insbesondere die \ieeeframe-Nachricht in der aktuellen Contiki Version
+	als Data-Frame gekennzeichnet und die Nachricht als unverschlüsselt
+	angegeben wird. An dieser Stelle gilt es zu überlegen, wie man eine
+	Verschlüsselung der Nachricht erreichen kann.  \footnote{In
+	\autoref{sec:ContikiNetStack:Hinweise} wird dieses Problem kurz
+	aufgegriffen.}
+
+	Der implementierte \ieeeframe-Framer unterstützt derzeit nur die
+	2003-Version des \ieeeframe-Standards. Dies muss beachtet werden,
+	sofern nicht \acs{6LoWPAN} als Network Driver eingesetzt wird.
+
+	Sofern das zu versendene Paket noch nicht versendet wurde, wird die
+	Data-Squence-Number (DSN) des Senders, die bei der Initialisieung
+	pseudo-zufällig erzeugt wurde, um eins erhöht, damit der Empfänger
+	doppelte Pakete erkennen und verwerfen kann.
+
+	Es werden natürlich noch weitere Informationen wie Empfänger- und
+	Sender-Adresse im Header gespeichert. Der genaue Ablauf ist für das
+	Verständnis nicht weiter nötig.
+
+\medskip
+
+	Zum Schluss gibt der Frame -- wie im Falle des Empfangens einer
+	Nachricht -- den Overhead des \ieeeframe-Frames zurück oder weist auf
+	einen Fehler hin.
+
+\minisec{Radio Driver}
+
+	Kurz vor dem Versenden der Nachricht muss der Radio Driver diese für
+	den Funksensor aufbereiten. Das Versenden geschieht \idR in zwei
+	Schritten:
+
+	Zuerst wird das Paket für die Übertragung vorbereitet und
+	beispielsweise die Checksumme berechnet, aber das Paket wird noch nicht
+	abgeschickt.  Danach wird das Paket erst versendet.
+
+	Die Zweiteilung hat den Vorteil, dass zwischen Vorbereitung und
+	Versendung einige Zeit vergeht.  Es ist denkbar, dass der RDC Driver
+	durch ein Strobe-Paket zuerst herausfinden möchte, ob der Empfänger
+	gerade erreichbr ist.  Da die Antwort ein wenig dauern kann, kann also
+	in der Zwischenzeit das Paket zum Versenden vorbereitet werden, damit
+	der empfangsbereite Empfänger nicht so lange warten muss, bis die
+	Nachricht eintrifft.
+
+	Da allerdings die Erläuterung des Radio Drivers sehr spezifische
+	Kenntnisse des Mikrocontrollers erfordert, wird an dieser Stelle auf
+	eine genaue Analyse verzichtet. Es sei nochmal wiederholt, dass der
+	Funksensor meist ein Teil der Funktionen der MAC-Schicht übernehmen
+	kann, die auch genutzt werden sollten, um die eigentliche
+	MAC-Implementation zu entlasten
+	\parensiehe{sec:NS:Funktionsweise:RadioDriver}.
+
+\subsection{Hinweise zum Contiki NetStack}
+\label{sec:ContikiNetStack:Hinweise}
+
+	Es folgen nun noch ein paar Hinweise zum Contiki NetStack, die das
+	Routing, das Funkmodul sowie den \ieeeframe-Framer betreffen:
+
+	\begin{description}
+	\item[Routing]
+		Beim Emfangen von Nachrichten kann ein Routing-Knoten seine
+		Nachbarschaftstabelle pflegen und hat so die Übersicht, welche
+		Netzknoten in seiner Nähe noch empfangsbereit sein könnten.
+
+		In \acs{6LoWPAN} gibt es zwei Methoden des Routings
+		\autocite{Chowdhury:Route-over-VS-Mesh-under-Routing}:
+		\emph{Mesh-under} und \emph{Route-over} Routing.  Die erste
+		Methode routet über den \acs{6LoWPAN} Adaptation Layer und die
+		zweite über den Network Layer (IPv6).
+
+	\item[Ausschalten des Funkmoduls]
+		Beim Aufruf der \lstinline=off=-Funktion kann per Parameter
+		mitgeteilt werden, dass das Funkmodul doch nicht ausgeschaltet
+		werden soll.  Im ersten Moment scheint diese Funktion
+		überfüssig, weil man den Aufruf dieser Funktion weglassen kann.
+
+		Da aber verschiedene Schichten miteinander -- und dies auch
+		über mehr als nur eine Schicht -- interagieren müssen, ist es
+		einfacher, die Einstellung einer höheren Schicht einfach
+		durchzuleiten.
+
+	\item[\ieeeframe-Framer]
+		Der \ieeeframe-Frame ist in Contiki 2.6 noch nicht vollständig
+		vorhanden:
+
+		Beispielsweise fehlt der \emph{Auxiliary Security Header}
+		\parencite[siehe][]{IeeeFrame:SecurityHeader:ZigBee}.  Dieser
+		Header wird benötigt, wenn im Frame-Control-Feld des
+		\ieeeframe-MAC-Headers das Security Enabled Bit auf 1 gesetzt
+		ist.
+
+		Das Projekt \emph{HexaBus}, welches Contiki 2.x verwendet, hat
+		diesen fehlenden Header nachgerüstet
+		\autocite{HexabusProject:GitHub}, aber er ist noch nicht in das
+		originale Contiki Projekt aufgenommen worden.
+	\end{description}
