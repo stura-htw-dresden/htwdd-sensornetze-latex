@@ -1,0 +1,40 @@
+\newcommand{\prosymbol}{%
+	\raisebox{-.1\baselineskip}{%
+		\begin{tikzpicture}%
+			\draw [line width=.1\baselineskip] (-.25\baselineskip,0) -- (.25\baselineskip,0);%
+			\draw [line width=.1\baselineskip] (0,-.25\baselineskip) -- (0,.25\baselineskip);%
+		\end{tikzpicture}%
+	}%
+	}
+\newcommand{\contrasymbol}{%
+	\raisebox{.15\baselineskip}{%
+		\begin{tikzpicture}%
+			\draw [line width=.1\baselineskip] (-.25\baselineskip,0) -- (.25\baselineskip,0);%
+		\end{tikzpicture}%
+	}%
+	}
+\definecolor{procolor}{rgb}{0,.8,0}
+\definecolor{contracolor}{rgb}{.8,0,0}
+%         |
+%         |
+%         |
+%   ------+------
+%         |
+%         |
+%         |
+%
+% h = .5\baselineskip
+%
+%
+%   -------------
+% h = .1\baselineskip
+%
+%
+\newenvironment{proconlist}%
+	{%
+		\begin{list}{?}{}%
+		\newcommand{\pro}{\item[\textcolor{procolor}{\prosymbol}]}%
+		\newcommand{\contra}{\item[\textcolor{contracolor}{\contrasymbol}]}%
+	}{%
+		\end{list}%
+	}

@@ -1,0 +1,134 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% filename:	vortrag.tex
+%% template:	Mon, 07 May 2012 13:01:14 +0200
+%% author:	Hermann Lorenz
+%% date:	20. Nov 2012 10:00
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[%
+	ngerman%
+	]{beamer}
+
+%\setbeameroption{show only notes} 	% note{} -- Anmerkungsfolien
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Lokalisierung %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}	% Umlaute direkt eingeben
+\usepackage[T1]{fontenc}	% Wörter mit Umlaute umbrechen
+\usepackage[ngerman]{babel}	% deutsche Bezeichner
+\usepackage[babel,german=guillemets]{csquotes}	% \enquote{}
+\usepackage{libertine}
+\usepackage[scaled=0.83]{beramono}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Bilder %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}	% \includegraphics{bild.pdf}
+\usepackage{tikz}
+
+%-----------------------------------------------------------
+% TikZ library: arrows, positioning
+
+\usetikzlibrary{arrows,positioning}
+\tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for boxes
+    punkt/.style={
+           rectangle,
+           rounded corners,
+           draw=black, very thick,
+           text width=6.5em,
+           minimum height=2em,
+           text centered},
+    % Define arrow style
+    pil/.style={
+           ->,
+           thick,
+           shorten <=2pt,
+           shorten >=2pt,}
+}
+\usetikzlibrary{fit}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% pdf-links %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[ngerman]{varioref}	% \vpageref{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% eigene Macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xspace}
+
+\newcommand{\zB}{z.\,B.\xspace}
+\newcommand{\conclusion}{\(\to\)\xspace}
+
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\newcommand{\prove}[1]{\textcolor{red}{TODO/PROVE(#1)}}
+%\newcommand{\todo}[1]{}
+%\newcommand{\prove}[1]{}
+
+\definecolor{lgray}{gray}{.3}
+\newcommand{\notall}[1]{\textcolor{lgray}{#1}}
+\newcommand{\eg}[1]{\textcolor{lgray}{#1}}
+
+\newcommand{\noteparagraph}[1]{\smallskip \textbf{#1}\,\,}
+
+\input{design}
+\input{procon}
+
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize,backgroundcolor=\color[rgb]{.9,.9,.9}}
+\usepackage{dirtree}
+
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{bbding}
+\usepackage[squaren]{SIunits}
+
+\AtBeginSection{%
+	\begin{frame}{Übersicht}%
+		\tableofcontents[currentsection]%
+	\end{frame}%
+}
+
+%-------------------------------------------------------------------------------
+% Navigationsleiste ausblenden
+\setbeamertemplate{navigation symbols}{}
+
+%-------------------------------------------------------------------------------
+% Diesen Abschnitt über \begin{document} lassen, damit die PDF-Informationen
+% korrekt gesetzt werden.
+\title{Forschungsprojekt Sensornetze}
+\date{10.\,Dezember~2012}
+\author{Angelos~Drossos \and Hermann~Lorenz
+	\and Ulrich~Meckel \and Martin~Doenicke
+	\and Thomas~Bettermann \and Robert~Krampe 
+	\and Marcus~Kupke \and Markus~Fischer
+	\and Enrico~Uhlig}
+\institute{Hochschule für Technik und Wirtschaft Dresden\\%
+			Master Angewandte Informationstechnologien\\%
+			Forschungsprojekt Sensornetze\\%
+			Prof. Dr. J. Vogt%
+}
+%-------------------------------------------------------------------------------
+
+\begin{document}
+%-------------------------------------------------------------------------------
+\begin{frame}[plain]
+	\maketitle
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\input{einfuehrung.tex}
+\input{server_gateway_regelwerk.tex}
+\input{coap.tex}
+\input{homematic_fs20.tex}
+\input{6LoWPAN.tex}
+%\input{fazit.tex}
+%-------------------------------------------------------------------------------
+
+\end{document}
