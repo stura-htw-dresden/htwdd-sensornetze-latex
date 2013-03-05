@@ -1,0 +1,74 @@
+\section{Hausautomatisierungslösung}
+\myContentSectionFrame[\thesection - 6]
+
+%----------------------------------------------------------
+
+\subsection{Systemarchitekur}{Dedizierter Steuerungsserver}
+
+%----------------------------------------------------------
+
+\begin{frame}[label=netzwerkaufbau]{\insertsubsection}{}
+\input{pic/netzwerkaufbau}
+\end{frame}
+
+%----------------------------------------------------------
+
+\input{coap}
+
+%----------------------------------------------------------
+
+\subsection[Regelwerk]{Regelverarbeitungssystem}
+
+%----------------------------------------------------------
+\begin{frame}{\insertsubsection}{Ziel}
+	\begin{itemize}
+	\item	automatische Ansteuerung von Knoten über vorher festgelegte
+		Regeln
+		\begin{itemize}
+		\item	Festlegung von Bedingungen
+		\item	Ausführen einer (oder mehrerer) Aktionen bei Erfüllung
+		\item	(evtl. alternative Aktionen bei Nichterfüllung)
+		\end{itemize}
+	\item	flexible Anpassung dieser Regeln
+		\begin{itemize}
+		\item	manuell für erfahrene Benutzer
+		\item	über einfach zu bedienende (Web-)Oberfläche für
+			Endanwender
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+%----------------------------------------------------------
+\begin{frame}{\insertsubsection}{Aufbau}
+	\begin{itemize}
+	\item	Beschreibung von Regeln in XML-Datei
+	\item	Syntax in DTD definiert
+	\item	flexible und eindeutige Kommunikation
+	\end{itemize}
+	\lstinputlisting[language=xml,tabsize=4]{bsp/regeln.dtd}
+\end{frame}
+%----------------------------------------------------------
+\begin{frame}{\insertsubsection}{Kommunikation}
+	\input{pic/regelkommunikation.tex}
+\end{frame}
+%----------------------------------------------------------
+\begin{frame}{\insertsubsection}{Umsetzung}
+	\begin{columns}
+	\column{.45\textwidth}
+		\begin{block}{zentral}
+		\begin{proconlist}
+		\pro	Verwaltung an zentraler Stelle
+		\pro	einfache Client-Anwendungen
+		\pro	weniger Kommunikation im Netz
+		\end{proconlist}
+		\end{block}
+	\column{.45\textwidth}
+		\begin{block}{dezentral}
+		\begin{proconlist}
+		\pro	Ausfall eines Steuerungsknotens tolerierbar
+		\pro	Autonome Systeme möglich
+		\contra	benötigt Broadcast-Kommunikation
+		\end{proconlist}
+		\end{block}
+	\end{columns}
+\end{frame}
+%----------------------------------------------------------

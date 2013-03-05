@@ -1,0 +1,52 @@
+\newcommand{\prosymbol}{%
+	\raisebox{-.1\baselineskip}{%
+		\begin{tikzpicture}%
+			\draw [line width=.1\baselineskip] (-.25\baselineskip,0) -- (.25\baselineskip,0);%
+			\draw [line width=.1\baselineskip] (0,-.25\baselineskip) -- (0,.25\baselineskip);%
+		\end{tikzpicture}%
+	}%
+	}
+\newcommand{\contrasymbol}{%
+	\raisebox{.15\baselineskip}{%
+		\begin{tikzpicture}%
+			\draw [line width=.1\baselineskip] (-.25\baselineskip,0) -- (.25\baselineskip,0);%
+		\end{tikzpicture}%
+	}%
+	}
+\newcommand{\proconsymbol}{%
+	\raisebox{-.1\baselineskip}{%
+		\begin{tikzpicture}%
+			\draw [line width=.05\baselineskip] (-.125\baselineskip,0) -- (-.125\baselineskip,.25\baselineskip);%
+			\draw [line width=.05\baselineskip] (-.25\baselineskip,.125\baselineskip) -- (0,.125\baselineskip);%
+			\draw [line width=.05\baselineskip] (0,-.125\baselineskip) -- (.25\baselineskip,-.125\baselineskip);%
+			\draw [line width=.02\baselineskip] (-.25\baselineskip,-.25\baselineskip) -- (.25\baselineskip,.25\baselineskip);%
+		\end{tikzpicture}%
+	}%
+	}
+\definecolor{procolor}{rgb}{0,.8,0}
+\definecolor{contracolor}{rgb}{.8,0,0}
+\definecolor{proconcolor}{rgb}{0,0,.6}
+%         |
+%         |
+%         |
+%   ------+------
+%         |
+%         |
+%         |
+%
+% h = .5\baselineskip
+%
+%
+%   -------------
+% h = .1\baselineskip
+%
+%
+\newenvironment{proconlist}%
+	{%
+		\begin{list}{?}{}%
+		\newcommand{\pro}{\item[\textcolor{procolor}{\prosymbol}]}%
+		\newcommand{\contra}{\item[\textcolor{contracolor}{\contrasymbol}]}%
+		\newcommand{\procon}{\item[\textcolor{proconcolor}{\proconsymbol}]}%
+	}{%
+		\end{list}%
+	}

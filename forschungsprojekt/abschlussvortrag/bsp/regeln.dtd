@@ -1,0 +1,12 @@
+<!ELEMENT rules (rule*)>
+	<!ELEMENT rule (conditions, actions, alternatives?)>
+		<!ELEMENT conditions (condition+)>
+			<!ELEMENT condition (#PCDATA)>
+				<!ATTLIST condition
+					operator ( lt | eq | gt | le | ge | ne ) #IMPLIED
+					value CDATA #IMPLIED >
+		<!ELEMENT actions (action+)>
+			<!ELEMENT action (#PCDATA)>
+				<!ATTLIST action
+					value CDATA #IMPLIED >
+		<!ELEMENT alternatives (action+)>

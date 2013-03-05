@@ -1,0 +1,36 @@
+\definecolor{gruen}{rgb}{0,.8,0}
+\definecolor{orangig}{rgb}{1,.452,0}
+\begin{tikzpicture}[>=stealth',pc/.style={rectangle,minimum width=1.5cm, minimum height=5cm,draw},%
+	mynode/.style={rectangle,draw, minimum width=1.5cm},
+	nachricht/.style={font=\scriptsize,auto}
+	]
+	\node (client) [pc]		{Client};
+	\node (webserver) [pc]		[right of=client, xshift=2.5cm] {\parbox{\widthof{Server}}{Web-Server}};
+	\node (pythonserver) [pc]	[right of=webserver, xshift=2.5cm] {\parbox{\widthof{Python-}}{Python-Server}};
+	\node (db) [rectangle,draw, minimum height=.8cm, minimum width=2.5cm, below of=webserver,xshift=1.8cm,yshift=-3cm] {Datenbank};
+
+	\node (node1) [mynode,right of=pythonserver,xshift=2cm,yshift=2.25cm]	{Node};
+	\node (node2) [mynode,below of=node1]		{Node};
+	\node (node3) [mynode,below of=node2]		{Node};
+
+	\draw [<->,shorten >=1mm,shorten <=1mm] (client.north east) -- node [auto] {HTTP} (webserver.north west);
+	\draw [<->,shorten >=1mm,shorten <=1mm] (webserver.north east) -- node [auto] {Web-Socket} (pythonserver.north west);
+	\draw [<->,shorten >=1mm,shorten <=1mm] (pythonserver.north east) -- node [auto] {6LoWPAN} (node1.north west);
+
+	\draw [<->,shorten >=1mm,shorten <=1mm] (db.north west) -- node [sloped,above,font=\tiny] {SQLite} (webserver);
+	\draw [<->,shorten >=1mm,shorten <=1mm] (db.north east) -- node [sloped,above,font=\tiny] {SQLite} (pythonserver);
+
+	\uncover<2->{
+		\draw [->,orangig] (client) -- node [nachricht] {Web-Request} (webserver);
+		\draw [->,orangig] (webserver) -- node [nachricht] {\parbox{\widthof{Nachricht}}{\centering Socket-Nachricht}} (pythonserver);
+		\draw [orangig] (pythonserver.east){}+(0.1,0.1) edge [bend left, ->, shorten >=1mm] node [above, font=\scriptsize] {\parbox{1.5cm}{\centering CoAP-Anfrage}} (node3.west);
+	}
+
+	\uncover<3->{
+		\draw [gruen] (pythonserver.south east){}+(0,-0.1) edge [bend left,->,shorten >=1mm] node [auto,font=\scriptsize] {Eintrag in DB} (db.east);
+		\draw [gruen] (db.west){}+(-0.1,0) edge [bend left,->,shorten >=1mm] node [below,font=\scriptsize,xshift=-.2cm,yshift=-.3cm] {\parbox{2cm}{\centering Auslesen der Sensorwerte aus DB}} (webserver.south west);
+		\draw [gruen] (client.south east){}+(0.1,0.1) edge [bend left,->,shorten >=1mm,font=\scriptsize] node [above] {\parbox{1.6cm}{\centering Zyklisches Nachladen der Seite}} (webserver.south west);
+		\draw [gruen] (webserver.south west){}+(-0.1,-0.1) edge [bend left,->,shorten >=1mm] (client.south east);
+		\draw [gruen] (node3.west){}+(-0.1,-0.1) edge [bend left, ->, shorten >=1mm] node [below, font=\scriptsize] {\parbox{1.5cm}{\centering CoAP-Antwort}} (pythonserver.east);
+	}
+\end{tikzpicture}

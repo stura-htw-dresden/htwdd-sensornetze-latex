@@ -1,0 +1,176 @@
+\section[Ansatz]{Ansatz}
+\myContentSectionFrame[\thesection - 6]
+
+%----------------------------------------------------------
+%----------------------------------------------------------
+
+\subsection[Anforderungen]{Anforderungen an das Hausautomatisierungssystem}
+
+%----------------------------------------------------------
+
+\begin{frame}{\insertsection}{Anforderungen I}
+	\begin{block}<+->{Dedizierter Netzknoten zur Regelung und Kontrolle}
+		\begin{itemize}
+		\item 	für den Hausbewohner leicht konfigurierbar und wartbar
+		\item 	Netzknoten befindet sich außerhalb des Sensornetzes
+		\end{itemize}
+	\end{block}
+	\vfill
+	\begin{block}<+->{Integration bestehender Sensornetze}
+		\begin{itemize}
+		\item 	Gewährleistung der Interoperabilität
+		\item 	Verringerung der Anschaffungskosten bei vorhandenen Sensornetzen
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+%----------------------------------------------------------
+
+\begin{frame}{\insertsection}{Anforderungen II}
+	\begin{block}<+->{Verwendung \enquote{klassischer} Internetprotokolle}
+		\begin{itemize}
+		\item 	Verwendung auf Vermittlungs-, Transport- und Anwendungsschicht
+		\item 	Erhöhung der Transparanz und Annahmebereitschaft der Hausbewohner
+		\item 	Einsparung von zusätzlichem Entwicklungsaufwand
+				% man betrachte heutzutage die vielen unterschiedlichen Betriebssyteme
+				% Mac OS, Windows, Linux Derivate, Android, iOS, BlackBerry, Firefox OS, Chrome OS
+		\item 	Analyse klassischer Internetprotokolle\newline
+				für den Einsatz in Sensornetzen
+				% Batterielebensdauer / Radio Duty Cycle / etc.
+		\end{itemize}
+	\end{block}
+	\vfill
+	\begin{block}<+->{Ausfall und Erweiterbarkeit von Netzknoten im Sensornetz}
+		\begin{itemize}
+		\item 	Wunsch nach Sicherheit (verschlüsselte Übertragung und Authentifizierung)
+		\item 	Einfache Installation neuer Sensor-/Aktorknoten
+		\item 	Flexibles Routing im Sensornetz
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+%----------------------------------------------------------
+
+\subsection{Verwandte Arbeiten}
+
+%----------------------------------------------------------
+
+	\subsubsection{FHEM}
+
+%----------------------------------------------------------
+
+\begin{frame}{\insertsubsection}{\insertsubsubsection}
+	\uncover<1->{\enquote{FHEM ist ein Hausautomations-Server,
+		geschrieben von Rudolf Koenig et al. in Perl,
+		um FS20-Komponenten und andere Geräte zu steuern.}}
+	\uncover<2->{\begin{proconlist}
+	\pro 	Dedizierter Netzknoten zur Regelung und Kontrolle
+	\pro 	Integration bestehender Sensornetze (FS20, HomeMatic)
+	\contra Ausfall und Erweiterbarkeit von Netzknoten:
+			\begin{itemize}
+			\item 	Regelverarbeitung durch Skriptsprache
+			\item 	Komplexe Regeln müssen in Perl implementiert werden
+			\end{itemize}
+	\contra Verwendung \enquote{klassischer} Internetprotokolle:
+			\begin{itemize}
+			\item 	es müssen Gateways bereitgestellt werden,
+					die beide Netzwerkstacks implementieren
+			\item 	keine Transparenz vorhanden
+			\item 	Gateways wirken der Interoperabilität entgegen
+			\end{itemize}
+	\end{proconlist}
+	\begin{itemize}
+	\item 	Projekt-Seite: \url{http://www.fhemwiki.de/wiki/FHEM}
+	\item 	Lizenz: GPLv2
+	\end{itemize}}
+\end{frame}
+
+%----------------------------------------------------------
+
+	\subsubsection[Hexabus]{Hexabus -- the Kranken of Automation}
+
+%----------------------------------------------------------
+
+\begin{frame}{\insertsubsection}{\insertsubsubsection}
+	\uncover<1->{\enquote{An IPv6-based home automation bus.}}
+	\uncover<2->{\begin{proconlist}
+	\contra 	befindet sich noch im Aufbau
+	\contra Kein dedizierter Netzknoten zur Regelung und Kontrolle
+			\begin{itemize}
+			\item 	Regelverarbeitung verteilt auf verschiedene Knoten
+			\item 	erfordert eine Übersicht über alle Knoten beim Anwender
+			\end{itemize}
+	\contra Keine Integration bestehender Sensornetze
+	\pro 	Ausfall und Erweiterbarkeit von Netzknoten durch Routing-Protokoll gelöst
+	\pro 	Es werden \enquote{klassische} Internetprotokolle verwendet:
+			\begin{itemize}
+			\item 	es wird die IPv6-Technologie angewandt: 6LoWPAN
+			\item 	Transparenz auf Vermittlungs- und Transportschicht
+			\item 	Anwendungsschicht (Hexabus Protokoll): nicht klassisch
+			\end{itemize}
+	\end{proconlist}
+	
+	\begin{itemize}
+	\item 	Projekt-Seite: \url{https://github.com/mysmartgrid/hexabus/wiki}
+	\end{itemize}}
+\end{frame}
+
+%----------------------------------------------------------
+
+\subsection{Projekteinteilung}
+
+%----------------------------------------------------------
+
+\begin{frame}{\insertsection}{\insertsubsection}
+	\begin{block}{dedizierter Regelungsserver}
+		\begin{enumerate}
+		\item 	DB zur Verwaltung der Sensoren/Aktoren
+		\item 	Integrierung der Anwendungsschicht (CoAP)
+		\item 	Regelverarbeitung (inkl. Weboberfläche)
+		\end{enumerate}
+	\end{block}
+	\begin{block}{Gateway zur Integration bestehender Sensornetze}
+		\begin{enumerate}
+		\item 	FS20
+		\item 	HomeMatic
+		\end{enumerate}
+	\end{block}
+	\begin{block}{Eigenes drahtloses Sensornetz (WSN)}
+			\begin{enumerate}
+			\item 	Border Router
+			\item 	Routerknoten
+			\item 	Netzknoten mit Sensoren
+			\item 	Netzknoten mit Aktoren
+			\end{enumerate}
+	\end{block}
+\end{frame}
+
+%----------------------------------------------------------
+
+%\subsection{Aufgabenstellung}
+
+%----------------------------------------------------------
+
+%\begin{frame}{\insertsubsection}{}
+%	\begin{itemize}
+%	\item	prüfen, ob mit bestehenden, offenen Technologien der Aufbau
+%		einer Heimautomatisierung möglich erscheint
+%	\item	als Sensoren und Aktoren sollen Funkmodule genutzt werden
+%	\item	Datensicherheit im Konzept von vornherein vorsehen
+%	\item	Praxisnähe
+%		\begin{itemize}
+%		\item	bestehende Technologien kombinieren um Aufwand zu sparen
+%		\item	offene Standards verwenden, um anderen die Mitarbeit
+%			kostengünstig zu ermöglichen
+%		\item	auf Energiesparsamkeit achten, da Knoten mit Batterien
+%			laufen
+%		\end{itemize}
+%	\end{itemize}
+%\end{frame}
+
+%-------------------------------------------------------------------------------
+
+% Ausblick
+% - Entwicklung eines "neuen" MAC-Protokolls in Contiki, welches dem 6LoWPAN-Standard entspricht
+%   und auch energie-effizient arbeitet und einer bestimmten MAC-Protokollgruppe angehört.
+

@@ -1,0 +1,55 @@
+%===============================================================================
+\subsection{Contiki-OS}
+%===============================================================================
+
+
+\subsubsection{Anforderungen an Softwareinfrastruktur}
+%-------------------------------------------------------------------------------
+\begin{frame}{\insertsubsubsection}{}
+	\begin{itemize}
+	\item	stromsparend
+	\item	speicherschonend
+	\item	bereits implementierte Netzwerkprotokolle
+	\item	Multitasking
+	\item	intuitive Programmierumgebung
+	\end{itemize}
+\end{frame}
+%-------------------------------------------------------------------------------
+
+\subsubsection{Infrastrukturentscheidung}
+%-------------------------------------------------------------------------------
+\begin{frame}{\insertsubsubsection}{}
+	\begin{columns}
+	\column{.45\textwidth}
+	\begin{block}{Betriebssystem}
+		\begin{proconlist}
+		\contra	Speicheroverhead für OS
+		\pro	Multitaskingabstraktion
+		\pro	stimmige Umgebung
+		%\pro	zeitsparend
+		\end{proconlist}
+	\end{block}
+
+	\column{.45\textwidth}
+	\begin{block}{eigene Infrastruktur}
+		\begin{proconlist}
+		\pro	kein Speicheroverhead
+		\contra	Multitasking von Hand
+		\contra	inkompatible Software
+		%\contra	zeitaufwändig
+		\end{proconlist}
+	\end{block}
+	\end{columns}
+
+	\begin{block}{Contiki}<2->
+	\begin{itemize}
+	\item	Multitasking auf einem Stack \(\leadsto\) speicherschonend
+	\item	grundlegende IPC-Mechanismen
+	\item	implementierte Netzwerkprotokolle (6LoWPAN, CoAP, \dots)
+	\item	vorgesehene Schnittstelle für Sleeping Modes
+	\item	bereits auf ATmega128RFA1 portiert
+	\item	dynamisches nachladen von Modulen
+	\end{itemize}
+	\end{block}
+\end{frame}
+%-------------------------------------------------------------------------------

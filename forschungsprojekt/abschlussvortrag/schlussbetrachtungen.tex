@@ -1,0 +1,60 @@
+\section[Fazit]{Schlussbetrachtungen}
+\myContentSectionFrame
+
+%-------------------------------------------------------------------------------
+
+\subsection{Einsatz mehrerer Sensornetze}
+
+%-------------------------------------------------------------------------------
+
+\begin{frame}{\insertsubsection}{}
+	\begin{itemize}
+	\item 	Nutzer kann vorhandene Geräte einbinden (Kostenminderung)
+	\end{itemize}
+
+	\begin{itemize}
+	\item 	Jedes Sensornetz kann spezifische Eigenschaften besitzen,
+			aber dennoch transparent mit dem Steuerungsserver verbunden sein:
+			\begin{enumerate}
+			\item 	Energieeffizienz
+			\item 	Kommunikationsgeschwindigkeit
+			\item 	Authentifizierung (sicherheitskritische Sensorknoten)
+			\item 	Einteilung nach logischer oder physikalischer Topologie
+			\end{enumerate}
+	\end{itemize}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+
+\subsection{Auswertung und Ausblick}
+
+%-------------------------------------------------------------------------------
+
+\begin{frame}{\insertsubsection}{}
+	\begin{block}<+->{Constrained Application Protokoll (CoAP)}
+		\begin{proconlist}
+		\pro 	ist zur Versendung der Sensorwerte geeignet
+		\pro 	leichtgewichtig gegenüber HTTP
+		\pro 	URIs eignen sich, um logische Strukturen aufzubauen
+		\pro 	CoAP-Overhead ist tolerierbar
+		\contra CoAP-Proxys zum Cachen von Sensorinformationen nützlich
+			(ist aber noch nicht vollständig standardisiert)
+		\end{proconlist}
+	\end{block}
+	\vfill
+	\begin{block}<+->{6LoWPAN-Sensornetz}
+		\begin{proconlist}
+		\pro 	Knoten verbinden sich automatisch mit dem Coordinator
+		\contra Authentifizierung (noch) nicht vorhanden
+		\contra Verschlüsselung der Nachrichten sollte untersucht werden
+		\contra Energieeinsparung kann erhöht werden (MAC/RDC-Protokoll)
+		\contra Contiki: Dokumentation in vielen Bereichen dürftig
+		\end{proconlist}
+	\end{block}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+
+\againframe{netzwerkaufbau}

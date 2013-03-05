@@ -1,0 +1,51 @@
+\setbeamertemplate{frametitle}{
+	\hspace{-1.5em}
+	\insertframetitle\\
+	\hspace{-.5em}\scriptsize\insertframesubtitle\hfill\insertpart\\[-.9em]
+	\rule{\textwidth}{.1pt}
+}
+\setbeamertemplate{frametitle}{%
+	\renewcommand{\arraystretch}{0.5}
+	\begin{tabular}{@{}l}
+		\hspace{-1.5em}
+		\insertframetitle \tabularnewline
+		\hspace{-.5em}
+		\scriptsize\insertframesubtitle \tabularnewline
+	\end{tabular}
+	\hfill%
+	{\scriptsize\insertpart}\\[-.5em]
+	\rule{\textwidth}{.1pt}
+}
+\setbeamertemplate{footline}{
+	\usebeamercolor[fg]{structure}
+	\hspace*{.5cm}\raisebox{3pt}{
+	\begin{tikzpicture}
+		\draw [draw opacity=0.0] (-2pt,0) -- (.85\textwidth + 2pt,0) -- (.85\textwidth + 2pt,-5pt) -- (-2pt,-5pt) -- cycle;
+		\draw (0,0) -- (.85\textwidth,0);
+		\ifnum\inserttotalframenumber>1
+		\if \insertpartstartpage \insertpartendpage
+		\else
+		\draw [fill,xshift=.85\textwidth / (\insertpartendpage - \insertpartstartpage) * (\insertpagenumber - \insertpartstartpage)] (0,0) -- (2pt,-5pt) -- (-2pt,-5pt) -- cycle;
+		\fi
+		\fi
+	\end{tikzpicture}
+	}
+	\hfill\raisebox{3pt}{\insertframenumber/\inserttotalframenumber\hspace{3pt}}
+}
+
+\definecolor{hllgreen}{rgb}{.2,.7,.2}
+\definecolor{hllgreenbg}{rgb}{.9,1,.9}
+\definecolor{hllblue}{rgb}{.2,.2,.7}
+\definecolor{hllbluebg}{rgb}{.9,.9,1}
+\definecolor{hllorange}{rgb}{1,0.482,0}
+\definecolor{hllorangebg}{rgb}{1,0.782,.4}
+\setbeamertemplate{blocks}[rounded]
+\setbeamercolor{structure}{fg=hllblue}
+\setbeamercolor{normal text}{fg=black}
+\setbeamercolor{alerted text}{fg=hllorange}
+\setbeamercolor{block title alerted}{fg=black,bg=hllorange}
+\setbeamercolor{block body alerted}{fg=black,bg=hllorangebg}
+\setbeamercolor{block title}{fg=white,bg=hllblue}
+\setbeamercolor{block body example}{fg=black,bg=hllgreenbg}
+\setbeamercolor{block title example}{fg=white,bg=hllgreen}
+\setbeamercolor{block body}{fg=black,bg=hllbluebg}

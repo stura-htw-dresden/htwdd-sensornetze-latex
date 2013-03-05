@@ -1,0 +1,79 @@
+\begin{tikzpicture}[funk/.style={dashed},
+	knoten/.style={draw,rectangle,font=\scriptsize},
+	pc/.style={draw,rectangle},
+	gateway/.style={draw,ellipse,font=\scriptsize},
+	protokoll/.style={pos=.5,above,sloped,font=\tiny},
+	node distance=2cm]
+	%,every node/.style={scale=.5}]
+
+%-------------------------------------------------------------------------------
+% IPv6 - Network
+%-------------------------------------------------------------------------------
+\coordinate (ipv6anfang)	at (0,0);
+\coordinate (ipv6mitte)		at (2,0);
+\coordinate (ipv6ende)		at (4,0);
+\draw [very thick] (ipv6anfang) -- node [protokoll,below] {IPv6} (ipv6mitte) -- (ipv6ende);
+
+\node (internet) [draw, cloud, aspect=2, below of=ipv6mitte,yshift=.5cm,xshift=.5cm]	{Internet};
+\draw (internet) -- (2.5,0);
+\node (server) [pc,above of=ipv6mitte,yshift=-.8cm]			{Server};
+\draw (server) -- (ipv6mitte);
+
+%-------------------------------------------------------------------------------
+% 6LoWPAN - Network
+%-------------------------------------------------------------------------------
+\node (6lpproxy) [gateway,	above of=ipv6ende,yshift=-.8cm]		{Proxy};
+\draw (6lpproxy) -- (ipv6ende);
+
+\node (6lpbr) [knoten, above of=6lpproxy,yshift=-.5cm]	{BR};
+\draw (6lpbr) -- node [protokoll] {USB} (6lpproxy);
+
+\node (6lpr) [knoten, above right of=6lpbr] {R};
+\draw [funk] (6lpr) -- node [protokoll] {6LoWPAN} (6lpbr);
+
+\node (6lpl1) [knoten, right of=6lpr] {L};
+\draw [funk] (6lpl1) -- node [protokoll] {6LoWPAN} (6lpr);
+\node (6lpl2) [knoten, below right of=6lpbr] {L};
+\draw [funk] (6lpl2) -- node [protokoll] {6LoWPAN} (6lpbr);
+
+\begin{pgfonlayer}{background}
+	\node[fill=green!20,rounded corners] (background) [fit=(6lpproxy) (6lpbr) (6lpr) (6lpl1) (6lpl2)] {};
+	\node [rotate=-90,anchor=south] at (background.east) {6LoWPAN};
+\end{pgfonlayer}
+
+%-------------------------------------------------------------------------------
+% FS20 - Network
+%-------------------------------------------------------------------------------
+\node (fs20gw) [gateway,	above of=ipv6anfang,yshift=-.8cm]		{GW};
+\draw (fs20gw) -- (ipv6anfang);
+
+\node (fs20br) [knoten, left of=fs20gw, xshift=.3cm]	{BR};
+\draw (fs20br) -- node [protokoll] {USB} (fs20gw);
+
+\node (fs20l1) [knoten, above of=fs20br] {L};
+\draw [funk] (fs20l1) -- node [protokoll] {FS20} (fs20br);
+\node (fs20l2) [knoten, above right of=fs20br] {L};
+\draw [funk] (fs20l2) -- node [protokoll] {FS20} (fs20br);
+
+\begin{pgfonlayer}{background}
+	\node[fill=red!20,rounded corners] (background) [fit=(fs20gw) (fs20br) (fs20l1) (fs20l2)] {};
+	\node [rotate=90,anchor=south] at (background.west) {FS20};
+\end{pgfonlayer}
+
+%-------------------------------------------------------------------------------
+% HomeMatic - Network
+%-------------------------------------------------------------------------------
+\node (hmgw) [gateway,	below of=ipv6anfang]		{GW};
+\draw (hmgw) -- (ipv6anfang);
+
+\node (hmbr) [knoten, left of=hmgw, xshift=.3cm]	{BR};
+\draw (hmbr) -- node [protokoll] {USB} (hmgw);
+
+\node (hml) [knoten, above of=hmbr,yshift=-.8cm] {L};
+\draw [funk] (hml) -- node [protokoll] {HM} (hmbr);
+
+\begin{pgfonlayer}{background}
+	\node[fill=blue!20,rounded corners] (background) [fit=(hmgw) (hmbr) (hml)] {};
+	\node [rotate=90,anchor=south] at (background.west) {HomeMatic};
+\end{pgfonlayer}
+\end{tikzpicture}

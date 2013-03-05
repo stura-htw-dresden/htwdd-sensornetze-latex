@@ -1,0 +1,71 @@
+\section{Einführung}
+\myContentSectionFrame
+
+%----------------------------------------------------------
+
+\subsection{Gebäude- vs. Hausautomatisierung}
+
+%----------------------------------------------------------
+
+\begin{frame}{Abgrenzung von Haus- und Gebäudeautomatisierung}{Gebäudeautomatisierung}
+	\begin{itemize}
+	\item 	wichtiger Bestandteil des technischen Facility-Managements
+	\item 	Energie- und Personaleinsparungen stehen im Vordergrund
+	\item 	dezentrale Anordnung der Steuerungseinheiten
+	\item 	Funktionsabläufe gewerkeübergreifend automatisch durchführen
+	\item 	Visualisierung der Automation nebensächlich\newline
+			(nur in der Managementebene)
+	\item 	i.\,d.\,R. herstellerspezifische, kommerzielle Bussysteme
+	\item 	Trend zur Offenheit und zum herstellerübergreifenden Informationsaustausch
+			(\emph{Interoperabilität}\,)
+			% Lockerung der Herstellerabhängigkeit (kein OpenSource-Gedanke!)
+			% Bussystem gibt die Möglichkeit, Fabrikate mehrerer Hersteller
+			% ohne größere Probleme miteinander kommunizieren zu lassen.
+			% Hersteller generieren für ihre Gateways je nach Projekt
+			% politische Preise, um der Interoperabilität entgegen zu wirken.
+	\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------
+
+\begin{frame}{Abgrenzung von Haus- und Gebäudeautomatisierung}{Hausautomatisierung}
+	\begin{itemize}
+	\item 	Teilbereich der Gebäudeautomatisierung
+	\item 	auf spezielle Bedürfnisse der Bewohner von (privaten) Wohnhäusern zugeschnitten
+	\item 	erhöhte Wohnkomfort, Sicherheit der Bewohner und Überwachung im Vordergrund
+	\item 	Visualisierung und Interaktion der Bewohner besonders wichtig
+	\item 	System muss skalierbar sein
+	\item 	neue Geräte müssen leicht installiert werden können
+	\end{itemize}
+\end{frame}
+
+%----------------------------------------------------------
+
+\subsection{Motivation und Ziel}
+
+\begin{frame}{\insertsubsection}{Vorüberlegungen zur Hausautomatisierung}
+	\begin{exampleblock}<+->{bestehende Hausautomatisierungslösungen}
+	bestehende Heimautomatisierungen besitzen mindestens einen, meist
+	mehrere der folgenden, gravierenden Nachteile:
+	\begin{itemize}
+	\item	teuer
+	\item	proprietär
+	\item	schlecht dokumentiert
+	\item	wenig Sicherheit (\zB in der Datenübertragung)
+	\end{itemize}
+	\end{exampleblock}
+
+	% neue Netzwerktechnologien (CoAP, 6LoWPAN, \dots) legen die Möglichkeit
+	% nahe, mit ihrer Hilfe eine offene Lösung zu konzipieren
+
+	\begin{block}<+->{Wunsch nach \enquote{freier} Hausautomatisierung}
+		\begin{itemize}
+		\item 	Hersteller-Unabhängigkeit (Interoperabilität)
+		\item 	geringere Installationskosten
+		\item 	überschaubarer Wartungsaufwand
+		\item 	Regelverarbeitung soll möglichst leicht konfigurierbar sein
+		\item 	Stichwort \emph{Internet der Dinge}
+		\end{itemize}
+	\end{block}
+\end{frame}
+

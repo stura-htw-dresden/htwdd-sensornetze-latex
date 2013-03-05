@@ -1,0 +1,47 @@
+\subsection[REST]{REST Programmierparadigma im Sensornetz}
+
+
+\begin{frame}{\insertsubsection}{}
+% Warum ist das REST Programmierparadigma sinnvoll im Sensornetz
+		\begin{block}<+->{Adressierbarkeit}
+			\begin{itemize}
+        		\item jeder REST-Dienst eines Servers hat eindeutige Adresse (URI)
+        		\item Sensoren und Aktoren haben feste Adresse % unter der sie erreichbar sind
+    			\end{itemize}
+		\end{block}
+		\begin{block}<+->{Zustandslosigkeit}
+    			\begin{itemize}
+        		\item zustandslose Anfragen
+        		\item jeder Request ist in sich geschlossen
+        		\item Request enthält alle Informationen für die Verarbeitung
+    			\end{itemize}
+		\end{block}
+		\begin{block}<+->{Operationen}
+    			\begin{itemize}
+        		\item REST-Server beschreiben ihre Dienste auf Anfrage
+        		\item standardisierte Anfragemöglichkeiten\newline
+				(GET / PUT / POST / DELETE)
+        		\item Sensoren/Aktoren können mit GET abgefragt werden
+        		\item Aktoren können mit PUT geschaltet werden
+    			\end{itemize}
+		\end{block}
+\end{frame}
+
+
+
+% CoAP : http://datatracker.ietf.org/doc/draft-ietf-core-coap/
+\begin{frame}{Constrained Application Protocol (CoAP)}{}
+        \begin{proconlist}
+            \pro REST Paradigma, aber \enquote{leichtgewichtiger} als HTTP
+            \pro einfaches HTTP-Mapping möglich, laut RFC-draft vorgesehen
+            \pro optionale Zuverlässigkeitsmechanismen (Confirmable / Non-Confirmable)
+            \pro Interoperabilität
+            \pro entspricht dem Ansatz \emph{Internet der Dinge}
+            \pro geringer Overhead gegenüber
+HTTP\footnote{\url{http://www.comnets.uni-bremen.de/itg/itgfg521/aktuelles/fg-workshop-29092011/ITG_HH_thomas_poetsch.pdf}}
+            \procon noch in Entwicklung (wird ständig verbessert, jedoch ggf. veraltete Implementierungen)
+            \contra größerer Overhead als Eigenentwicklung\newline
+			(jedoch mangelnde Interoperabilität)
+        \end{proconlist}
+\end{frame}
+
