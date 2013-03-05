@@ -1,0 +1,125 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% filename:	vortrag.tex
+%% template:	Mon, 07 May 2012 13:01:14 +0200
+%% author:	Hermann Lorenz
+%% date:	20. Nov 2012 10:00
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[%
+	ngerman%
+	]{beamer}
+
+%\setbeameroption{show only notes} 	% note{} -- Anmerkungsfolien
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Lokalisierung %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[utf8]{inputenc}	% Umlaute direkt eingeben
+\usepackage[T1]{fontenc}	% Wörter mit Umlaute umbrechen
+\usepackage[ngerman]{babel}	% deutsche Bezeichner
+\usepackage[babel,german=guillemets]{csquotes}	% \enquote{}
+\usepackage{libertine}
+\usepackage[scaled=0.83]{beramono}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Bilder %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}	% \includegraphics{bild.pdf}
+\usepackage{tikz}
+
+%-----------------------------------------------------------
+% TikZ library: arrows, positioning
+
+\usetikzlibrary{arrows,positioning}
+\tikzset{
+    %Define standard arrow tip
+    >=stealth',
+    %Define style for boxes
+    punkt/.style={
+           rectangle,
+           rounded corners,
+           draw=black, very thick,
+           text width=6.5em,
+           minimum height=2em,
+           text centered},
+    % Define arrow style
+    pil/.style={
+           ->,
+           thick,
+           shorten <=2pt,
+           shorten >=2pt,}
+}
+\usetikzlibrary{fit}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% pdf-links %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[ngerman]{varioref}	% \vpageref{}
+\hypersetup{
+	pdfauthor={Angelos Drossos, Hermann Lorenz},
+	pdftitle={Contiki-OS - Präsentation}
+	}	% \autoref{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% eigene Macros %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xspace}
+
+\newcommand{\zB}{z.\,B.\xspace}
+\newcommand{\conclusion}{\(\to\)\xspace}
+
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\newcommand{\prove}[1]{\textcolor{red}{TODO/PROVE(#1)}}
+%\newcommand{\todo}[1]{}
+%\newcommand{\prove}[1]{}
+
+\definecolor{lgray}{gray}{.3}
+\newcommand{\notall}[1]{\textcolor{lgray}{#1}}
+
+\newcommand{\noteparagraph}[1]{\smallskip \textbf{#1}\,\,}
+
+\input{design}
+\input{procon}
+
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\scriptsize,backgroundcolor=\color[rgb]{.9,.9,.9}}
+\usepackage{dirtree}
+
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{bbding}
+\usepackage[squaren]{SIunits}
+
+\AtBeginSection{%
+	\begin{frame}{Übersicht}%
+		\tableofcontents[currentsection]%
+	\end{frame}%
+}
+
+
+
+\begin{document}
+%-------------------------------------------------------------------------------
+\title{Contiki-OS}
+\date{26.\,November~2012}
+\author{Angelos Drossos \and Hermann Lorenz}
+\institute{Hochschule für Technik und Wirtschaft Dresden\\%
+			Master Angewandte Informationstechnologien\\%
+			Sensornetze%
+}
+
+%-------------------------------------------------------------------------------
+\begin{frame}[plain]
+	\maketitle
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\input{contiki_einfuehrung.tex}
+\input{impl_aspekte.tex}
+\input{mac_layer.tex}
+\input{dynamic_module_loading.tex}
+\input{fazit.tex}
+%-------------------------------------------------------------------------------
+
+\end{document}

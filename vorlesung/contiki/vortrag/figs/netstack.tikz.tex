@@ -1,0 +1,19 @@
+\begin{tikzpicture}[node distance=1cm, auto,]
+	%nodes
+	\node[punkt] (radio) {Radio Sensor};
+	\node[punkt, inner sep=5pt,below=0.5cm of radio] (rdc) {Radio Duty Cycle (RDC)};
+	\node[punkt, inner sep=5pt,below=0.5cm of rdc] (mac) {Multiple Access Control (MAC)};
+	\node[punkt, inner sep=5pt,below=0.5cm of mac] (network) {Network};
+	% We make a dummy figure to make everything look nice.
+	%\node[right=of dummy] (t) {Ultimate borrower}
+	%	edge[pil,bend left=45] (radio.east) % edges are used to connect two nodes
+	%	edge[pil, bend left=45] (rdc.east); % .east since we want
+	%	                                          % consistent style
+	\node[left=of radio] (g) {Nachricht}
+		edge[pil, bend left=45] (radio.west);
+		% edge[pil, bend right=45] (rdc.west);
+		%	edge[pil,<->, bend left=45] node[auto] {Direct (a)} (t);
+	\node[below right=0.25cm of radio] (g) {input}
+		edge[pil, bend right=45] (radio.east)
+		edge[pil, bend left=45] (rdc.east);
+\end{tikzpicture}

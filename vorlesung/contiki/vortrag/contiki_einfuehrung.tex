@@ -1,0 +1,177 @@
+\section{Einführung in Contiki}
+
+% *1. Einführung in Contiki* (ca. 10min)
+%
+% - Paper: Operating Systems for Wireless Sensor Networks: A Survey
+%          Muhammad Omer Farooq and Thomas Kunz (2011)
+%          www.mdpi.com/1424-8220/11/6/5900/pdf
+
+% - insb. für die Leute, die von Contiki noch nichts gehört haben.
+% - Was ist Contiki
+% - Wofür ist es primär gedacht (Internet)?
+% - Idee der Umsetzung (Implementierungsansatz: Trennung von
+%   core/cpu/platform, etc..)
+% - Welche Lizenz? (3-clause BSD-style license, aber ohne die Pflicht, den
+%   Code OpenSource zu stellen.)
+
+%-------------------------------------------------------------------------------
+\begin{frame}{Was ist Contik-OS?}
+	\begin{itemize}
+	\item	Open-Source-Betriebssystem (3-Klausel-BSD-Lizenz)
+	\item	für
+		\begin{itemize}
+		\item	eingebettete, batteriebetriebene Systeme
+		\item	Netzwerkgeräte
+		%\item	bereits implementierte Netzwerkstacks
+		\end{itemize}
+	\item	bereits auf verschiedenste Hardwareplattformen portiert
+	\end{itemize}
+
+	\uncover<2->{
+	\begin{center}
+	\alert{\enquote{Open Source Operation System for the Internet of Things}}
+	\end{center}
+	}
+\end{frame}
+%....... note .................................................................
+\note{
+	Contiki-OS ist ein OpenSource Betriebssystem, welches ermöglicht,
+	dass eingebettete Systeme miteinander und mit Rechnersystemen
+	über Internettechnologien kommunizieren können.
+	\bigskip
+
+	Alle Modifikationen am Betriebssystem werden mit einer 3-Klausel-BSD-Lizenz
+	gemacht, wodurch eine Firma/Person die Möglichkeit hat, seinen Änderungen
+	geheim zu halten.
+	\bigskip
+
+	Contiki ist vor allem für eingebettete, also leistungsarme, Systeme
+	entworfen worden. Zumeist werden diese Systeme mit Batterien betrieben,
+	wodurch Schlafzeiten länger als Wachzeiten dauern sollten.
+	\bigskip
+
+	Da Contiki mit der Außenwelt kommunizieren möchte, muss man sich überlegen,
+	wie man diese sich weiter entwickelnden Technologien sinnvoll
+	integrieren kann. Genau dieses stellen wir EUCH \emph{übernächstes} Kapitel
+	vor.
+}
+\note{
+	Da Contiki bereits implementierte Netzwerk-Stacks bietet,
+	können sofort Anwendungen geschrieben werden, die mit der Außenwelt
+	kommunizieren.
+	\bigskip
+
+	Ein gutes Beispiel für die funktionierende Kommunikation
+	ist ein kleiner Webserver, welcher letztes Semester im Rahmen des
+	Forschungsseminars vorgestellt wurde.
+	\bigskip
+
+	Wer allerdings die entsprechende Hardware nicht zur Verfügung hat,
+	kann zur Netzwerk-Simulation mittels Cooja zurückgreifen.
+}
+%-------------------------------------------------------------------------------
+\begin{frame}{Welche Funktionalität bietet Contiki?}
+	\begin{itemize}
+	\item	Netzwerkunterstützung: UDP, TCP, HTTP, 6LoWPAN, RimeStack, RPL, CoAP
+	\item	Protothreads
+	\item	Speicherverwaltung:
+		\begin{itemize}
+		\item	memory block allocation (memb)
+		\item	managed memory allocator (mmem)
+		\end{itemize}
+	\item	Dateisystem: Coffee flash file system (CFS)
+	\item	Programme zur Laufzeit nachladen \conclusion \enquote{Dynamic Module Loading}
+	\item	Tools:
+		\begin{itemize}
+		\item	Netzwerk-Simulation durch den Cooja Simulator
+		\item	Überwachung des Energieverbrauchs (EnergEst-Modul)
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+%....... note .................................................................
+\note{
+	Die Funktionsvielfalt von Contiki hat in den letzten Jahren enorm
+	zugenommen. Da wir im Rahmen dieses Vortrags nicht alle Einzelheiten
+	ansprechen können, haben wir uns auf eine kleine Menge beschränkt.
+	\bigskip
+
+	Dennoch möchten wir zuerst einen Überblick zu den Funktionen
+	geben:
+
+	\noteparagraph{Protothreads}
+	Ein wirklich grundlegendes Konzept in Contiki sind die Protothreads,
+	die wir im \emph{nächsten} Kapitel näher beleuten werden.
+	Diese ermöglichen die Verwendung von Threads, welche kooperativ arbeiten.
+	Da sie kooperativ arbeiten, ist kein seperater Stack für jeden Thread
+	von nöten.
+
+	\noteparagraph{Coffee flash file system (CFS)}
+	Contiki bietet die Möglichkeit, Dateien zu verwalten --
+	und zwar unabhängig von der verwendeten
+	Hardware (SRAM, ROM, EEPROM, etc.).
+}
+\note{
+	\noteparagraph{Memory Management}
+	Jeder Programmierer kennt das Problem, wie man dynamisch Speicher
+	allokiert. Besonders in eingebetteten Systemen sollte man möglichst wenig
+	\emph{malloc} verwenden, da es zur Speicherfragmentierung führt und
+	es bei falscher Verwendung schnell zu Speicherlecks sowie
+	undefiniertes Verhalten kommt.
+	\smallskip
+
+	Hierzu hat Contiki gleich zwei Technologien parat:
+	Zum einen \emph{Memory block allocation (memb)}, welches einen statischen
+	Speicherbereich in gleichgroße Blöcke einteilt,
+	und zum anderen den \emph{Managed Memory Allocator (mmem)}, der
+	den freien Speicherbereich zusammenführt, wodurch Programme nie sicher sein
+	können, dass der allokierte Speicher am selben Platz bleibt.
+}
+\note{
+	\noteparagraph{Full IP Networking}
+	Wie bereits angesprochen, gibt es eine Reihe von bereits implementierten
+	Internettechnologien. Einige sind besonders für Systeme mit sehr wenig
+	Speicher entwickelt worden -- wie wir bereits in der Vorlesung erfahren
+	haben: 6LoWPAN.
+
+	\noteparagraph{Energest Modul}
+	Bei Betriebssystemen einer bestimmten Größe verliert man schnell
+	die Übersicht, wie lange oder wie oft ein bestimmtes Ereignis 
+	ausgeführt wird. Um den Arbeitsablauf des eingebetteten Systems
+	optimieren zu können, ist das Energest Modul entwickelt worden.
+	Es zählt wie ein Counter mit, wie lange etwas dauert -- wie beim
+	Ein- und Auschecken in Firmengebäuden. Dadurch kann man sehen, an welchen
+	Stellen man optimieren sollte.
+
+	\noteparagraph{Dynamic Module Loading}
+	Dynamisches Starten von Modulen bzw. Programmcode ist die wichtigste
+	Funktion in modernen Betriebssystemen und ist damit auch auf eingebetteten
+	Systemen durchaus von Vorteil.
+	Dieses werden wir im \emph{letzten} Kapitel näher beleuten.
+}
+%-------------------------------------------------------------------------------
+\begin{frame}{Wie ist Contiki aufgebaut?}
+	\input{einfuehrung/img/schichten.tex}
+	%\todo{Contiki-Schichtenmodell von Marcus Dreier übernehmen/abwandeln??}
+	%\prove{DA Portierung des Betriebssystems Contiki auf die Blackfin Architektur.}
+	%\url{http://www2.htw-dresden.de/~robge/arbeiten/2010/da-marcus-dreier.pdf}
+\end{frame}
+%-------------------------------------------------------------------------------
+%\begin{frame}{Die Contiki-OS--Architektur}{Verzeichnis}
+%	\begin{itemize}
+%	\item	apps (telnet,
+%			shell,
+%			\dots)
+%	\item	core
+%	\item	cpu (arm,
+%			avr,
+%			z80,
+%			\dots)
+%	\item	doc
+%	\item	examples
+%	\item	platform (avr-raven,
+%			avr-atmega128rfa1,
+%			\dots)
+%	\item	tools
+%	\end{itemize}
+%\end{frame}
+%-------------------------------------------------------------------------------

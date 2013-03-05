@@ -1,0 +1,169 @@
+\section{Implementationsaspekte}
+
+% *2. Implementierungsaspekt* Prozesse/Threads/Protothreads und ähnliches
+% (10min - 15min)
+%
+% - Contiki Prozesse an Minimal-Beispiel zeigen und erklären
+%   (compilieren, programmieren und ausführen)
+% - Kommunikation zwischen Prozessen
+
+\subsection{Theorie}
+%-------------------------------------------------------------------------------
+\begin{frame}{Theorie}{Anforderungen}
+	\begin{description}[Programmierung]
+	\item[Strom]
+		Knoten sollen Jahre mit einer Batterie auskommen
+		%\item[Reaktion]
+			%relativ wenig Last, mehr reagieren
+	\item[Speicher]
+		nur wenige KB RAM
+	\item[Programmierung]
+		einfache Programmierung
+
+		Netzwerkprotokolle sind kontrollfluss- und nicht zustandsorientiert
+	\end{description}
+\end{frame}
+
+%-------------------------------------------------------------------------------
+\begin{frame}{Theorie}{Systemarchitekturen}
+	\begin{block}{ereignisgesteuert}
+		\begin{proconlist}
+		%\pro	Stromsparend (kein Polling)
+		\pro	nur ein Stack \conclusion geringer Speicherbedarf
+		%\contra	keine rechenintensiven Algorithmen
+		\contra	Programmierung als Zustandsmaschine notwendig
+		%\contra	nur neuestes Ereignis kann abgearbeitet werden
+		%\contra	Ereignisbehandlung kann nicht unterbrochen werden
+		\end{proconlist}
+	\end{block}
+
+	\begin{block}{threadorientiert}
+		\begin{proconlist}
+		%\pro	mehrere Behandlungen nebeneinander
+		%\pro	größere Berechnungen möglich
+		%\pro	Ereignisse können nach Wichtigkeit geordnet behandelt werden
+		%\pro	Nebenläufigkeit
+		\pro	intuitivere Programmierung, keine Zustandsmaschinen
+			notwendig
+		\contra	hohe Speicherreservierung je Thread
+		%\contra	Außenwelt muss regelmäßig eigenständig abgefragt werden
+			%\(\to\) hoher Stromverbrauch
+		\end{proconlist}
+	\end{block}
+\end{frame}
+%-------------------------------------------------------------------------------
+
+\subsection{Protothreads}
+%-------------------------------------------------------------------------------
+\begin{frame}[fragile]{Protothreads}{Umsetzung der Makros (schematisch)}
+	\begin{columns}
+	\column{.40\linewidth}<1->
+		\lstinputlisting[%
+			keywords={do\_something\_else,do\_something,xyz},%
+			title={Quellcode},%
+			tabsize=4%
+			]{impl/xmpl/protothread_before_precompiler.c}
+	\column{.50\linewidth}<2->
+		\lstinputlisting[%
+			keywords={do\_something\_else,do\_something,xyz},%
+			title={ausgewertete Defines},%
+			tabsize=4]{impl/xmpl/protothread_after_precompiler.c}
+	\end{columns}
+
+	\uncover<3->{
+	\begin{description}[CPU-Zuweisung]
+	\item[CPU-Abgabe]
+		return mit nächster Sprungmarke
+	\item[CPU-Zuweisung]
+		Funktionsaufruf mit Sprungmarke
+		\begin{itemize}
+		\item	lokale Variablen verlieren Werte bei Kontextwechsel
+		\item	\alert{globale Variablen oder static nutzen}
+		\end{itemize}
+	\end{description}
+	}
+\end{frame}
+%-------------------------------------------------------------------------------
+\begin{frame}{Prozesse und Protothreads}
+	\begin{description}[Protothread]
+	\item[Prozess]
+		ist einzelner Protothread
+	\item[{Protothread}]
+		\begin{itemize}
+		\item	leichtgewichtiger Thread
+		\item	\alert{kein} eigener Stack
+		\item	kooperatives Multitasking
+			\begin{description}[yield]
+			\item[wait]	Protothread gibt Kontrolle ab, bis Event eintritt
+			\item[yield]	Protothread gibt Kontrolle ab
+			\end{description}
+		\item	keine direkte Switchanweisung
+		\end{itemize}
+%		\begin{itemize}
+%		\item	durch Macros realisiert
+%		\item	\alert{kein} eigener Stack
+%		\item	Variablen verlieren Werte bei Kontextwechsel
+%			\begin{description}
+%			\item[Lösung]	globale Variablen oder\newline static Variablen
+%			\end{description}
+%		\item	kooperatives Multitasking
+%		\end{itemize}
+	\end{description}
+\end{frame}
+%-------------------------------------------------------------------------------
+%\begin{frame}{Prozesse als Protothreads}
+%	\todo{frametitle}
+%
+%	\input{impl/img/protothread.tex}
+%\end{frame}
+%-------------------------------------------------------------------------------
+
+\subsection{Interprozess-Kommunikation}
+%-------------------------------------------------------------------------------
+\begin{frame}{Kommunikation zwischen Prozessen}{Events und Polling}
+	\begin{description}[Event]
+	\item[Event]
+		Signal an einen Prozess in die Event Queue einordnen
+		\input{impl/img/event}
+
+	\uncover<6->{
+	\item[Poll]
+		\begin{itemize}
+		\item	jeder Prozess besitzt Polling Flag
+		\item	vor der Event Queue werden alle Polling Flags geprüft
+		\item	bei gesetzten Polling Flag wird der Polling Handler ausgeführt
+		\end{itemize}
+		}
+	\end{description}
+\end{frame}
+%-------------------------------------------------------------------------------
+\begin{frame}{Kommunikation zwischen Prozessen}{Events und Polling im Einsatz}
+	\input{impl/img/kommunikation}
+	%Literatur \url{http://www.sics.se/contiki/wiki/index.php/Processes}
+\end{frame}
+%-------------------------------------------------------------------------------
+\begin{frame}{Kommunikation zwischen Prozessen}{Semaphore und Protosockets}
+	\begin{description}[Protosockets]
+	\item[Semaphore]
+		zur Synchronisation der Protothreads
+		\begin{itemize}
+		\item	PT\_SEM\_INIT(s, c)
+		\item	PT\_SEM\_WAIT(pt, c)
+		\item	PT\_SEM\_SIGNAL(pt, c)
+		\end{itemize}
+	\item[Protosockets]
+		Zugriff auf das uIP-Interface, analog zu BSD-Sockets
+		\begin{itemize}
+		\item	PSOCK\_INIT(\dots)
+		\item	PSOCK\_SEND\_STR(\dots)
+		\item	PSOCK\_READBUF(\dots)
+		\item	\dots
+		\end{itemize}
+	\end{description}
+\end{frame}
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+\subsection{Beispielprojekt}
+%-------------------------------------------------------------------------------
+\input{impl/1stxmpl}

@@ -1,0 +1,232 @@
+\section{Dynamic Module Loading}
+
+% Titel geändert, so wie er auf der Contiki-OS.org Seite angegeben wurde.
+%
+% *4. Thema "Support for dynamic loading and replacement of individual
+%  programs and services"*
+% oder anders: "Downloading code at run-time"
+% (ca. 15min - 20min)
+%
+% - Paper: Contiki - a Lightweight and Flexible Operation System for Tiny
+%          Networked Sensors
+%          Adam Dunkels, Björn Grönvall, Thiemo Voigt (2004)
+% - Paper: Run-Time Dynamic Linking for Reprogramming Wireless Sensor Networks
+%          Adam Dunkels, Noclas Finne, Joakim Eriksson, Thiemo Voigt (2006)
+%
+% - Diplomarbeit: Dynamische Re-Programmierung von Sensorknoten zur Laufzeit
+%                 Jan Moritz Strübe (2008)
+%   Link: strübe.de/wp-content/uploads/2008/08/da.pdf
+%
+% - Paper: Dynamic TinyOS: Modular and Transparent Incremental Code-Updates
+%          for Sensor Networks
+%          Waqaas Munawar, M. H. Alizai, O. Landsiedel, L. Wehrle (2010)
+%
+% - Das thema ist bei "large scale networks" (100-1000 und mehr Nodes per
+%   Netzwerk) extrem wichtig und da wollen wir im Prinzip auch hin
+% - Beispiel: Es müssen nicht nur Anwendungen wie eine komplette Shell
+%   übertragen werden. Es reicht auch aus, wenn Conigurationen wie der
+%   6LoWPAN-Channel geupdatet werden.
+% - Anwendungsbeispiele, Theorie dahinter
+% - Beispielimplementation (wenn wir es schaffen)
+%
+
+%-------------------------------------------------------------------------------
+\begin{frame}{Dynamic Module Loading}{Einführung}
+	\begin{exampleblock}<+->{Anwendung}
+		\begin{itemize}
+		\item 	an schwer zugänglichen Orten
+				(Daten sammeln, extern auswerten, Software anpassen)
+		\item 	Korrektur von Softwarefehlern
+		\item 	Schließen von Sicherheitslücken
+		\item 	Erweiterung der Funktionalität:
+				spezielle Applikationen situationsbedingt (temporär) ausführen
+		\end{itemize}
+	\end{exampleblock}
+	\begin{block}<+->{Problemstellung}
+		\begin{itemize}
+		\item 	genügend Speicher zum Zwischenspeichern des \enquote{Programms}
+		\item 	energieaufwändige Übertragung (Verkürzung der Batterielaufzeit)
+		\end{itemize}
+	\end{block}
+	\begin{alertblock}<+->{Lösung}
+		effizientes Verteilen der neuen \enquote{Softwareversion}
+	\end{alertblock}
+\end{frame}
+%....... note .................................................................
+%\note{}
+%-------------------------------------------------------------------------------
+\subsection{Anforderungen und Umsetzungen}
+%-------------------------------------------------------------------------------
+\begin{frame}{Dynamic Module Loading}{Anforderungen}
+	\begin{block}<+->{Anforderungen}
+		\begin{itemize}
+		\item 	Das ganze System ist austauschbar.
+		\item 	Nur ein Modul ist zur Laufzeit nachzuladbar und ausführbar.
+		\item 	Wenn ein kleiner Codeabschnitt geändert werden soll, dann soll
+				nicht das komplette System neu aufgespielt werden.
+		\item 	\alert{niedriger Energieverbrauch}
+				sowohl bei der Übertragung als auch Ausführung
+		\end{itemize}
+	\end{block}
+	\begin{block}<+->{Methoden der Umsetzung} % see TinyOS-Paper
+		\begin{itemize}
+		\item 	Full-Image Replacement
+		\item 	Differential Image Replacement
+		\item 	Virtual Machines
+		\item 	Dynamic Operation Systems
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+%\note{}
+%-------------------------------------------------------------------------------
+\begin{frame}{Dynamic Module Loading}{Umsetzungsarten}
+	\begin{block}{Methoden der Umsetzung} % see TinyOS-Paper
+		\begin{itemize}
+		\item 	Full-Image Replacement
+		\item 	Differential Image Replacement
+		\item 	Virtual Machines
+		\item 	Dynamic Operation Systems
+		\end{itemize}
+	\end{block}
+	\begin{block}{Lösungen in bekannten Betriebssystemen}
+		\begin{itemize}
+		\item 	TinyOS % Incremental Code-Updates (Differential Image Replacement)
+		\item 	SOS (Weiterentwicklung 2008 eingestellt) % SOS: lookup table
+		\item 	Contiki-OS % native (ELF, Compact ELF), Java VM, CVM
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+%\note{}
+%-------------------------------------------------------------------------------
+\subsection{Vom Empfang bis zur Ausführung}
+%-------------------------------------------------------------------------------
+\begin{frame}{Dynamic Module Loading}{Vom Empfang bis zur Ausführung des Moduls}
+	\begin{block}<+->{Schritte vom Empfang bis zur Ausführung}
+		\begin{enumerate}
+		\item 	Empfangen
+		\item 	EEPROM beschreiben
+		\item 	\enquote{Link \& Relocation}
+		\item 	Flash ROM beschreiben
+		\end{enumerate}
+		$\Rightarrow$ 	Das Programm ist ausführbar.
+	\end{block}
+	\begin{block}<+->{Technologien im Contiki}
+		\begin{itemize}
+		\item 	ELF
+		\item 	CELF (compact ELF)
+		\item 	Java Virtual Machine
+		\item 	CVM (Contiki Virtual Machine)
+		\item 	\notall{(und weitere)}
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+%\note{}
+%-------------------------------------------------------------------------------
+\begin{frame}{Dynamic Module Loading}{Vom Empfang bis zur Ausführung des Moduls}
+	\begin{block}<+->{Notwendige Schritte in den verschiedenen Technologien}
+			\centering
+			\begin{tabular}{lcccc}
+				\toprule
+				& \textit{ELF} & \textit{CELF} &  \textit{Java VM} & \textit{CVM}
+								\tabularnewline
+				\midrule
+				Empfangen               & \Checkmark  & \Checkmark & \Checkmark & \Checkmark
+				\tabularnewline
+				EEPROM beschreiben      & \Checkmark & \Checkmark &            & 
+				\tabularnewline
+				Link \& Relocation      & \Checkmark & \Checkmark &  & 
+				\tabularnewline
+				Flash ROM beschreiben & \Checkmark & \Checkmark & \Checkmark & 
+				\tabularnewline
+				\bottomrule
+			\end{tabular}
+	\end{block}
+	\begin{block}<+->{Energie-Verbrauch [\milli\joule]}
+			\centering
+			\begin{tabular}{lcccc}
+				\toprule
+				& \textit{ELF} & \textit{CELF} &  \textit{Java VM} & \textit{CVM}
+								\tabularnewline
+				\midrule
+				Empfangen               & 29 & 12 & 22 & 2
+				\tabularnewline
+				EEPROM beschreiben      &  2 &  1 &     & 
+				\tabularnewline
+				Link \& Relocation      &  3 &  3 &   & 
+				\tabularnewline
+				Flash ROM beschreiben &  1 &  1 & 5 & 
+				\tabularnewline
+				\bottomrule
+			\end{tabular}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+%\note{}
+%-------------------------------------------------------------------------------
+\begin{frame}{Dynamic Module Loading}{Vom Empfang bis zur Ausführung des Moduls}
+	\begin{block}<+->{Ausführungszeit (einfaches Programm)}
+			\centering
+			\begin{tabular}{lccc}
+				\toprule
+				& \textit{Native} &  \textit{Java VM} & \alert{\textit{CVM}}
+								\tabularnewline
+				\midrule
+				Ausführungszeit  [\milli\second] & 0.479 & 1.79 & 0.845
+				\tabularnewline
+				Energieverbrauch [\micro\joule] & 0.54 & 2.0 & 0.95
+				\tabularnewline
+				\midrule
+				Energieverbrauch [\micro\joule] & 36 000 & 27 000 & 2 000
+				\tabularnewline
+				bei der Übertragung       &  &  & 
+				\tabularnewline
+				\bottomrule
+			\end{tabular}
+	\end{block}
+	\begin{block}<+->{Ausführungszeit (komplexes Programm)}
+			\centering
+			\begin{tabular}{lccc}
+				\toprule
+				& \alert{\textit{Native}} &  \textit{Java VM} & \textit{CVM}
+								\tabularnewline
+				\midrule
+				Ausführungszeit  [\milli\second] & 0.67& 65.6 & 58.52
+				\tabularnewline
+				Energieverbrauch [\micro\joule] & 0.75& 73 & 65
+				\tabularnewline
+				\bottomrule
+			\end{tabular}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+%\note{}
+%-------------------------------------------------------------------------------
+\subsection{Ausblick}
+%-------------------------------------------------------------------------------
+\begin{frame}{Dynamic Module Loading}{Ausblick}
+	\begin{alertblock}<+->{Fazit}
+	\begin{itemize}
+	\item 	Optimale Lösung kommt auf den Anwendungsfall an.
+	\item 	Virtual Machines haben ihren Reiz bei der Übertragung, aber
+			Defizite bei der Ausführung
+	\item 	Virtual Machine Code kann nicht auf Hardware-nahe Funktionen
+			zugreifen: Es sind native Schnittstellen erforderlich.
+	\end{itemize}
+	\end{alertblock}
+
+	\begin{exampleblock}<+->{Dynamic Module Loading in der Hausautomatisierung}
+		\begin{itemize}
+		\item 	Application Reconfiguration ist eine mögliche Anwendung
+		\item 	Sicherheit ist ein Problem: z.B. Manipulationen
+		\item 	für Entwicklungsumgebungen sinnvoll
+		\item 	in der Praxis i.d.R. zu hoher Energieverbrauch
+		\end{itemize}
+	\end{exampleblock}
+\end{frame}
+%....... note .................................................................
+%\note{}
+%-------------------------------------------------------------------------------
+

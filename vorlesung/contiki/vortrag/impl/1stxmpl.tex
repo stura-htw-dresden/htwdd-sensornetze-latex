@@ -1,0 +1,77 @@
+%-------------------------------------------------------------------------------
+\begin{frame}{Beispielprojekt}
+	\begin{block}{Repository}
+		\begin{itemize}
+		\item	klonen\newline
+			\texttt{git clone https://github.com/contiki-os/contiki}
+		\item	anpassen
+			\begin{itemize}
+			\item	\texttt{contiki/cpu/avr/Makefile.avr}
+				\begin{itemize}
+				\item	\texttt{avrdude}
+					\(\quad\to\quad\)
+					\texttt{sudo avrdude}
+				\end{itemize}
+			\item	\texttt{platform/avr-atmegarfa1/Makefile.avr-atmegarfa1}
+				\begin{itemize}
+				\item	\texttt{AVRDUDE\_PROGRAMMER=jtag2}
+					\(\quad\to\quad\)
+					\texttt{dragon\_jtag}
+				\item	\texttt{AVRDUDE\_PORT=usb:00B000000D79}
+					\(\quad\to\quad\)
+					\texttt{usb}
+				\end{itemize}
+			\end{itemize}
+		\end{itemize}
+	\end{block}
+	\begin{block}{Projekt}
+		\begin{itemize}
+		\item	Projektverzeichnis erstellen\newline
+			\texttt{mkdir -p project/hellosworld}
+		\item	Bibliotheken des Sensorterminalboards kopieren\newline
+			\texttt{config.h}, \quad
+			\texttt{usb.c}, \quad
+			\texttt{usb.h}, \quad
+			\texttt{io\_access.c}, \quad
+			\texttt{io\_access.h} \quad und \quad
+			\texttt{io\_access\_ext.h} \quad
+		\end{itemize}
+	\end{block}
+\end{frame}
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+\begin{frame}{Beispielprojekt}{hellosworld.c}
+	\lstinputlisting[title={hellosworld.c},keywords={PROCESS,AUTOSTART\_PROCESSES,PROCESS\_THREAD,PROCESS\_BEGIN,PROCESS\_END}]{impl/xmpl/1st/hellosworld.c}
+\end{frame}
+%-------------------------------------------------------------------------------
+
+%-------------------------------------------------------------------------------
+\begin{frame}{Beispielprojekt}{Makefile}
+	\begin{columns}
+	\column{.55\linewidth}
+		\lstinputlisting[title={Makefile}]{impl/xmpl/1st/Makefile}
+	\column{.4\linewidth}
+		\begin{block}{Verzeichnisbaum}
+		\scriptsize
+		\dirtree{%
+			.1 contiki.
+			.2 project.
+			.3 hellosworld.
+			.4 config.c.
+			.4 hellosworld.c.
+			.4 io\_access.c.
+			.4 io\_access.h.
+			.4 io\_access\_ext.h.
+			.4 usb.c.
+			.4 usb.h.
+			.4 Makefile.
+			.2 Makefile.include.
+		}
+		\end{block}
+	\end{columns}
+	\begin{itemize}
+	\item	\texttt{make program}
+	\end{itemize}
+\end{frame}
+%-------------------------------------------------------------------------------

@@ -1,0 +1,416 @@
+\section{MAC-Implementierung}
+
+% *3. MAC-Implementierung* (15min - 20min)
+%
+% - Implementation erläutern: Wie ist der MAC-Layer implementiert?
+%   d.h. komplett software-basiert oder werden Funktionen des jeweiligen
+%   Microcontrollers genutzt
+%   Wenn hardware-basiert: Gibt es Unterschiede zwischen den
+%   CPU-Implementationen? (kurz)
+%
+% - Bei der Erläuterung Blockschaltbilder und/oder Code zeigen
+%   (ggf. weitere Grundlagen mit der Routing-Truppe absprechen)
+%
+% - Vielleicht noch den Netwerk-Simulator Coja zeigen
+
+% Link: de.wikipedia.org/wiki/Sensornetz
+%     --> Medienzugriffsprotokolle
+% Link: www.sics.se/contiki/wiki/index.php/Change_MAC_or_Radio_Duty_Cycling_Protocols
+%     --> RDC, MAC layers
+
+% ? useful
+% Link: https://www.hostedredmine.com/projects/contiki-ns3-integration/wiki/Design_for_Integration_Component
+%     --> Contiki Socket Network Device, Contiki Scheduler, Interessante Bilder
+
+%-------------------------------------------------------------------------------
+\subsection{Net Stack Layers}
+%-------------------------------------------------------------------------------
+\begin{frame}{Contiki Net Stack layers}{Der Aufbau}
+	\begin{enumerate}
+	\item 	Radio (Hardware)
+	\item 	Radio Duty Cycling (RDC)
+	\item 	Framer
+	\item 	Medium Access Control (MAC)
+	\item 	Network
+	\end{enumerate}
+\end{frame}
+%....... note .................................................................
+\note{
+	\noteparagraph{Versch. Varianten des Net-Stacks}
+	Wie bereits in der Einführung gesagt wurde,
+	bietet Contiki einen kompletten Netzwerk-Stack an.
+	Es sind sogar verschiedene Varianten des Netzwerk-Stacks implementiert,
+	so dass diejenige Variante gefunden werden kann,
+	die den eigenen Ansprüchen am ehesten entspricht.
+
+	\noteparagraph{Konzept transparent gegenüber Anwendungen}
+	Mit anderen Worten: Wenn die mir zur Verfügung gestellten Varianten
+	nicht zusagen, kann ich einfach eine eigene Variante entwickeln
+	und ins System integrieren, ohne dass die Anwendungen auf den höheren
+	Schichten umgeschrieben werden müssen.
+
+	\noteparagraph{Oberste Schicht: Network}
+	Die oberste Schicht, die wir im Net Stack betrachten, ist
+	der \emph{Network--layer}. Dadrüber befindet sich noch die uIP (TCP/IP)
+	Applikation. Sie gehört aber nicht mehr zum Net Stack, sondern ist eine
+	mögliche Abstraktionsschicht zwischen Anwender und NetStack.
+}
+\note{
+	Der NetStack gliedert sich in folgende Schichten, die wir in den nächsten
+	Folien näher beleuten werden.
+
+	\noteparagraph{Net Stack}
+	\begin{itemize}
+	\item 	Ganz unten befindet sich der \emph{Radio--layer}.
+	\item 	Darüber ist dann ein Layer, der sich mit dem \emph{Radio Duty Cycle}
+			beschäftigt.
+	\item 	Ein \emph{Framer} erzeugt die Frames.
+	\item 	Der \emph{MAC--layer} kümmert sich um die Organisation des 
+			Versendens und Empfangens, also \emph{wie} versendet wird.
+	\item 	Ganz oben ist der \emph{Network--layer} angesiedelt.
+	\end{itemize}
+}
+%-------------------------------------------------------------------------------
+\begin{frame}{Contiki Net Stack layers}{Die Konfiguration}
+	\uncover<1->{\lstinputlisting[language=C,title={core/net/netstack.h}]{mac-xmpl/netstack.h}}
+	\uncover<2->{\lstinputlisting[language=C,title={contiki-conf.h (Platform, Projekt)}]{mac-xmpl/contiki-conf.h}}
+\end{frame}
+%....... note .................................................................
+\note{
+	Bevor wir die einzelnen Layer und ihre Aufgaben vorstellen,
+	wollen wir noch die Konfiguration des Net Stacks erklären.
+	Diese ist nämlich ganz einfach.
+
+	\noteparagraph{netstack.h}
+	Im Contiki-Kernel sind die Treiber für den Net Stack durch C-Structs
+	implementiert: \emph{Extern}, weil die Definition in den jeweiligen
+	Net Stack Source Dateien vorhanden sind und nicht in der \emph{netstack.h};
+	Diese Structs werden auf Makros gemappt, die beliebig definierbar sind.
+
+	\noteparagraph{contiki-conf.h}
+	Die Platform oder das Projekt legt fest, welche Implementation verwendet wird.
+	Hier ist ein Beispiel aus der Platform \emph{avr-atmega128rfa1} zu sehen.
+	Das Macro mit \emph{CONF} im Namen wird dann in der \emph{netstack.h}
+	auf dasjenige ohne \emph{CONF} gemappt.
+	Bei der Konfiguration hat die Projekt-Konfiguration i.d.R. vorrang
+	vor der Platform-Konfiguration.
+
+	Auf den folgenden Folien erklären wir EUCH nun die Aufgaben
+	und die zur Zeit existierenden Varianten des Net Stacks.
+}
+%-------------------------------------------------------------------------------
+\subsection{Aufgaben und Implementationen}
+%-------------------------------------------------------------------------------
+\begin{frame}{Radio -- layer}{Aufgaben und Implementationen}
+	\begin{block}{Aufgaben}
+		\begin{itemize}
+			\item 	Kommunikation mit dem Funksensor
+			\item 	CPU-abhängige Implementation
+			\item 	Bestimmte Funktionalität auf die Hardware umlegen
+					(Auto-ACK)
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{Implementationen (CPU)}
+		\begin{itemize}
+			\item 	NullRadio
+			\item 	rf230 (AVR)
+			\item 	cc2430\_rf (cc2430)
+			\item 	cc2530\_rf (cc253x)
+			\item 	stm32w (stm32w108)
+			\item 	Contiki MACA (mc1322x)
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+\note{
+	\noteparagraph{Kommunikation, CPU-abhängig}
+	Wir beginnen mit dem Radio--layer, denn dieser kommuniziert direkt
+	mit der Hardware, also dem Funksensor. Demnach ist es auch logisch,
+	dass es sich hierbei um cpu-abhängigen Code handelt, weshalb sich die
+	Implementationen für z.B. avr-Mikrocontroller im Ordner /cpu/avr befinden.
+
+	\noteparagraph{Funksensor-Funktionen}
+	Je nach Funksensor können bestimmte Funktionen wie das Senden eines
+	automatischen ACK auf die Hardware verlagert werden, d.h. die Software
+	muss dieses nur einmalig einstellen.
+
+	\noteparagraph{Implementation: AVR}
+	Contiki stellt eine leere Radio-Implementation, NullRadio, bereit.
+	Desweiteren exisitieren 5 verschiedene Funksensor-Implementationen.
+	Für AVR-Mikrocontroller gibt es eine Implementation mit Namen \emph{rf230},
+	welcher intern mit dem ATmega128rfa1 und dem AT86RF230-Funksensor
+	umgehen kann (1- und 2-chip-Lösung).
+}
+\note{
+	\noteparagraph{Implementation: ccXXXX}
+	Die beliebte \emph{true System-on-chip-Solution} von Texas Intruments ist ebenfalls
+	mit 2 Prozessoren vertreten: der \emph{cc2430} und die \emph{cc2530}-Reihe.
+
+	\noteparagraph{Implementation: stm32w108}
+	Auch ein 32bit ARM Cortex-M3 Micro-Prozessor, welcher ebenfalls 
+	eine\emph{System-on-chip-Solution} ist, ist vertreten.
+	
+	\noteparagraph{Implementation: mc1322x}
+	Freescale Funklösungen sind vertreten.
+
+	\noteparagraph{Zusammenfassend} kann man sagen, dass alle wichtigen
+	Microcontroller in Contiki vertreten sind.
+}
+%-------------------------------------------------------------------------------
+\begin{frame}{Network -- layer}{Aufgaben und Implementationen}
+	\begin{block}{Aufgaben}
+		\begin{itemize}
+			\item 	Schnittstelle zu den Applikationen
+					(Empfangen und Versenden von Nachrichten)
+			\item 	Interagiert mit dem MAC--layer
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{Implementationen}
+		\begin{itemize}
+			\item 	RIME
+			\item 	SicsLowPAN
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+\note{
+	\noteparagraph{Gegenseite}
+	Als Contiki-App-Entwickler möchte man vielleicht nicht alle Details
+	der Radio-Implementationen kennen. Wir interessieren uns hauptsächlich
+	dafür, wie wir Nachrichten empfangen und versenden können.
+	Daher betrachten wir nun erstmal die Gegenseite.
+
+	\noteparagraph{Network--layer}
+	Der Network--layer hat zur Aufgabe, eine Schnittstelle zu den Applikationen
+	anzubieten, welche möglichst konfortabel ist.
+	Im Wesentlichen besteht diese nur aus init, output und input.
+	Output und Input sind zwei Callbacks, die vor dem Senden/Empfangen gesetzt
+	werden. In der Regel reicht es, dass der TCP/IP-Prozess die Callbacks stellt.
+	Man kann aber auch eigene sogenannte \enquote{RIME-Sniffer}
+	unabhängig vom TCP/IP-Prozess integrieren.
+
+	\noteparagraph{RIME}
+	Der NetStack-Part von RIME basiert ebenfalls auf diesen 3 Funktionen,
+	obwohl der komplette RIME-Stack -- ähnlich zu dem uIP TCP/IP-Stack --
+	eine Reihe zusätzlicher Funktionen bietet.
+}
+\note{
+	\noteparagraph{RIME (Forts.)}
+	Der RIME-Stack bietet eine Reihe von Hierarchisch geordneten
+	Wireless Network Protocols, von einem anonymen Broadcast (\enquote{abs})
+	über multihop-Funktionalitäten bis hin zum Mesh-Network-Routing.
+	\prove{Dieses wird im Vortrag nächste Woche genauer behandelt werden.}
+
+	\noteparagraph{6LoWPAN}
+	Die zweite Network--layer--Variante ist 6LowPAN.
+	\prove{Da wir 6LowPAN bereits in der Vorlesung hatten, werden wir hier nicht
+	weiter darauf eingehen.} Es ist soviel zu sagen, dass es sowohl
+	uIP-Funktionalitäten als auch RIME-Funktionalitäten nutzt.
+}
+%-------------------------------------------------------------------------------
+\begin{frame}{Radio Duty Cycling -- layer}{Aufgaben und Implementationen}
+	\begin{block}{Aufgaben}
+		\begin{itemize}
+			\item 	schaltet den Radio Transceiver so oft wie möglich aus
+			\item 	sorgt damit für energie-effizientes Arbeiten
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{Implementationen}
+		\begin{itemize}
+			\item 	ContikiMAC (Low-Power-Listening, LPL)
+			\item 	LPP (Low-Power Probing)
+			\item 	X-MAC
+			\item 	CX-MAC (Compatiblity X-MAC)
+			\item 	SicsLowMAC \notall{(no Radio Cycling)}
+				% see: http://permalink.gmane.org/gmane.os.contiki.devel/7432
+			\item 	NullRDC \notall{(no Radio Cycling)}
+			\item 	NullRDC No Framer \notall{(no Radio Cycling)}
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+\note{
+	Nachdem wir nun den Layer auf der obersten Ebene hatten, den Network--layer,
+	und auch denjenigen auf der untersten Ebene, den Radio--layer.
+	kommen wir nun zu den Zwischenebenen.
+
+	\noteparagraph{Energie-effizienz}
+	Da wir möglichst energie-effizient arbeiten wollen, benötigen wir
+	eine Einheit, die genau dieses umsetzt.
+	Hier kommt der Radio~Duty~Cycling--layer (kurz RDC) ins Spiel.
+	Und deshalb hat der RDC--layer die Aufgabe, 
+	den Radio--layer anzuweisen, dass der Radio Transceiver so oft wie möglich
+	schläft.
+
+	\noteparagraph{Varianten}
+	Daher gibt es gerade an dieser Stelle sehr viele Varianten.
+	Manche davon werden mit MAC bezeichnet, weshalb es zu Verwirrungen
+	mit dem MAC--layer kommen kann.
+}
+\note{
+	\noteparagraph{ContikiMAC}
+	Die Variante, die im Contiki als Default eingestellt ist, ist das
+	\emph{ContikiMAC}-Protokoll. Dieses Protokoll wird auch in die
+	\emph{Low-Power-Listening}-Protokolle eingeordnet. Der Name sagt bereits,
+	dass ein Netzwerknoten seinen Radio Transceiver für kurze Zeit anschaltet,
+	um zu lauschen. Sollte kein Funkverkehr vorhanden sein, dann legt sich
+	der Radio Transceiver wieder schlafen.
+	Die \emph{Channel Check Rate} kann in 2er Hertz-Schritten eingestellt
+	werden. Standard ist 8 Hz, also 125ms. Eine Rate größer als 16 Hz ist
+	untypisch. Zusätzlich kann eine \emph{Phase Optimization}
+	eingeschaltet werden, wodurch \todo{Phase Optim.}.
+
+	\noteparagraph{X-MAC und CX-MAC}
+	X-MAC sendet, um einen Empfänger zu erreichen,
+	eine langen Strom sich wiederholender Pakete,
+	bis der Empfänger aufwacht und antwortet.
+}
+\note{
+	\noteparagraph{LPP}
+	Beim Low-Power-Probing wird im Gegensatz zum LPL ein Beacon-Signal
+	in regelmäßigen Abständen gesendet. Dieser Beacon zeigt an, dass
+	ein Knoten für kurze Zeit bereit zum Empfangen ist.
+
+	\noteparagraph{SicslowMAC und NullRDC}
+	6LowMAC und NullRDC sind leichtgewichtige Protokolle und beinhalten
+	KEIN \emph{Radio Cycling}! NullRDC--No~Framer verpackt die Daten sogar
+	nicht in Frames. Daher ist kein energie-effizientes Arbeiten sichergestellt.
+	Die RDC-Schnittstelle beinhaltet allerdings
+	eine \emph{on} und \emph{off} Funktion, wodurch höhere Schichten
+	diese Aufgabe übernehmen könnten.
+}
+\note{
+	Ram requirements:
+	\begin{itemize}
+	\item 	ContikiMAC: 984
+	\item 	LPP: 473
+	\item 	X-MAC: 175
+	\item 	CX-MAC: 115
+	\item 	SicslowMAC: 25
+	\item 	NullRDC: 21
+	\end{itemize}
+}
+%-------------------------------------------------------------------------------
+\begin{frame}{Framer -- layer}{Aufgaben und Implementationen}
+	\begin{block}{Aufgaben}
+		\begin{itemize}
+			\item 	Erzeugen von Frames zum Versenden
+			\item 	Parsen von Frames beim Empfangen
+			\item 	Wird vom RDC--layer aufgerufen und legt die bearbeiteten
+					Frames in einen Packet-Buffer
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{Implementationen}
+		\begin{itemize}
+			\item 	Framer 802.15.4
+			\item 	Framer NullMAC
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+\note{
+	Bevor wir zum MAC--layer kommen, ist der Framer an der Reihe.
+	Dieser arbeitet sehr eng mit dem RDC--layer zusammen, denn der
+	RDC--layer sagt, ob und wann Frames erzeugt oder geparst werden.
+
+	\noteparagraph{Framer 802.15.4}
+	Der Framer erzeugt damit die 802.15.4-Frames.
+
+	\noteparagraph{Framer NullMAC} hat weniger zu tun, nämlich
+	schreibt bzw. liest er Empfanger- und Sender-Addresse aus bzw. in den
+	Packet-Buffer.
+}
+%-------------------------------------------------------------------------------
+\begin{frame}{MAC -- layer}{Aufgaben und Implementationen}
+	\begin{block}{Aufgaben}
+		\begin{itemize}
+			\item 	empfängt eingehende Packete vom RDC layer
+			\item 	benutzt den RDC layer, um Packete zu versenden
+			\item 	\notall{sorgt dafür, dass Packete erneut gesendet werden, sofern
+					der RDC layer eine Kollision detektiert hat}
+		\end{itemize}
+	\end{block}
+
+	\begin{block}{Implementationen}
+		\begin{itemize}
+			\item 	CSMA (Carrier Sense Multiple Access)
+			\item 	TDMA (Time Division Multiple Access)
+			\item 	CTDMA (Carrier / Time Division Multiple Access)
+			\item 	RIME UDP
+			\item 	NullMAC
+			\item 	SicsLowMAC \notall{(AVR, nutzt nicht RDC-Protokoll)}
+		\end{itemize}
+	\end{block}
+\end{frame}
+%....... note .................................................................
+\note{
+	\noteparagraph{Aufgaben MAC--layer}
+	Der MAC--layer organisiert den Zugriff auf das Medium.
+	Er nimmt also Packete vom RDC layer entgegen und reicht Packete
+	vom Network--layer zum RDC--layer weiter.
+	Bei einigen Protokollen werden Packete erneut gesendet, sofern
+	Kollisionen erkannt wurden.
+
+	\noteparagraph{CSMA und TDMA}
+	sollten bekannte Verfahren aus der Mobilfunk-Technik sein, weshalb wir
+	diese nicht extra erklären wollen.
+
+	\noteparagraph{CTDMA}
+	ist eine Mischung aus CSMA und TDMA.
+
+	\noteparagraph{SicsLowMAC}
+	ist nicht vergleichbar mit der SicslowMAC-Implementation aus dem Kernel.
+	Es nutzt nicht die allgemeine NetStack-Implementation, sondern 
+	nimmt seine eigene.
+}
+%-------------------------------------------------------------------------------
+\subsection{Nachrichtenaustausch}
+%-------------------------------------------------------------------------------
+\begin{frame}{Nachrichtenaustausch}{Eintreffende Nachricht}
+	\input{figs/NetStackReceive.pgf.tex}
+\end{frame}
+%....... note .................................................................
+%\note{ }
+%-------------------------------------------------------------------------------
+\begin{frame}{Nachrichtenaustausch}{Ausgehende Nachricht (TCP/IP)}
+	\input{figs/NetStackSend.pgf.tex}
+\end{frame}
+%....... note .................................................................
+%\note{ }
+%-------------------------------------------------------------------------------
+\begin{frame}{Nachrichtenaustausch}{Ausgehende Nachricht (RIME)}
+	\input{figs/NetStackSendRIME.pgf.tex}
+\end{frame}
+%....... note .................................................................
+%\note{ }
+%-------------------------------------------------------------------------------
+%\begin{frame}{Network und Framer -- layer}{Schnittstelle}
+%	\lstinputlisting[language=C,title={core/net/netstack.h (Treiber)}]{mac-xmpl/netstack-network.h}
+%	\lstinputlisting[language=C,title={core/net/mac/framer.h (Treiber)}]{mac-xmpl/framer.h}
+%\end{frame}
+%....... note .................................................................
+%\note{ }
+%-------------------------------------------------------------------------------
+%\begin{frame}{Radio -- layer}{Schnittstelle}
+%	\lstinputlisting[language=C,title={core/dev/radio.h (Treiber)}]{mac-xmpl/radio.h}
+%\end{frame}
+%....... note .................................................................
+%\note{ }
+%-------------------------------------------------------------------------------
+%\begin{frame}{RDC -- layer}{Schnittstelle}
+%	\lstinputlisting[language=C,title={core/net/rdc.h (Treiber)}]{mac-xmpl/rdc.h}
+%\end{frame}
+%....... note .................................................................
+%\note{ }
+%-------------------------------------------------------------------------------
+%\begin{frame}{MAC -- layer}{Schnittstelle}
+%	\lstinputlisting[language=C,title={core/net/mac.h (Treiber)}]{mac-xmpl/mac.h}
+%\end{frame}
+%....... note .................................................................
+%\note{ }
+%-------------------------------------------------------------------------------
+

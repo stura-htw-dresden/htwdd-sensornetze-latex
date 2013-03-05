@@ -1,0 +1,24 @@
+\begin{tikzpicture}
+	\tikzstyle{aufruf}=[font=\ttfamily\scriptsize];
+	\tikzstyle{funktion}=[draw,minimum width=2cm,fill=red!20,draw=black!20,thick];
+	%\node (prozess) [funktion,below of=ph,below=1cm] {Prozess};
+
+
+	\uncover<3->{
+		\node [outer sep=0mm,inner sep=0mm] (eqout) at (1.625,0) {};
+		\draw (0,0) -- (3.25,0) -- (3.25,.5) -- (0,.5) -- cycle;
+		\draw (0.5,0) -- (0.5,0.5);
+		\draw (1,0) -- (1,0.5);
+		\node (eqin) at(1.625,0.7) {Event-Queue};
+		\node at (1.625,0.25) {\dots};
+		\draw (2.25,0) -- (2.25,0.5);
+		\draw (2.75,0) -- (2.75,0.5);
+	}
+	\uncover<4->{\node (pa) [funktion,below of=eqout,below=.5cm] {Prozess A};}
+	\uncover<2->{\node (ph) [funktion,above of=eqin,above=1cm] {Prozess A Polling-Handler};}
+	\uncover<1->{\node (isr) [funktion,above of=ph,above=1cm] {ISR};}
+
+	\uncover<2->{\draw [->] (isr) -- node [aufruf,left] {process\_poll(prozessA)} (ph);}
+	\uncover<3->{\draw [->] (ph) -- node [aufruf,left] {process\_post(prozessA)} (eqin);}
+	\uncover<4->{\draw [->] (eqout) -- (pa);}
+\end{tikzpicture}
