@@ -30,22 +30,22 @@
 
 ILATEX     = $(strip $(LATEX))
 ifneq ($(words $(ILATEX)),1)
-	$(error LATEX: use 'pdflatex' or 'lualatex'!)
+$(error "Configuration Issue: the varible LATEX should use either 'pdflatex' or 'lualatex'!")
 endif
 
 ITARGET    = $(strip $(TARGET))
 ifneq ($(words $(ITARGET)),1)
-	$(error TARGET: use only one main latex document!)
+$(error "Configuration Issue: the variable TARGET should only use one main latex document!")
 endif
 
 IOUTFORMAT = $(strip $(OUTFORMAT))
 ifneq ($(words $(IOUTFORMAT)),1)
-	$(error OUTFORMAT: use 'pdf' or 'dvi'!)
+$(error "Configuration Issue: the variable OUTFORMAT should use either 'pdf' or 'dvi'!")
 endif
 
 IOUTDIR    = $(strip $(OUTDIR))
 ifneq ($(words $(IOUTDIR)),1)
-	$(error OUTDIR: use only one output directory)
+$(error "Configuration Issue: the variable OUTDIR should only use one output directory!")
 endif
 
 
