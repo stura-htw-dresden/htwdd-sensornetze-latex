@@ -28,24 +28,24 @@
 
 # test configuration variables
 
-IILATEX     = $(strip $(LATEX))
-ifneq ($(words $(IILATEX),1)
-	$(error ILATEX: use 'pdflatex' or 'lualatex'!)
+ILATEX     = $(strip $(LATEX))
+ifneq ($(words $(ILATEX)),1)
+	$(error LATEX: use 'pdflatex' or 'lualatex'!)
 endif
 
 ITARGET    = $(strip $(TARGET))
-ifneq ($(words $(ITARGET),1)
+ifneq ($(words $(ITARGET)),1)
 	$(error TARGET: use only one main latex document!)
 endif
 
-IIOUTFORMAT = $(strip $(OUTFORMAT))
-ifneq ($(words $(IIOUTFORMAT),1)
-	$(error IOUTFORMAT: use 'pdf' or 'dvi'!)
+IOUTFORMAT = $(strip $(OUTFORMAT))
+ifneq ($(words $(IOUTFORMAT)),1)
+	$(error OUTFORMAT: use 'pdf' or 'dvi'!)
 endif
 
-IIOUTDIR    = $(strip $(OUTDIR))
-ifneq ($(words $(IIOUTDIR),1)
-	$(error IOUTDIR: use only one output directory)
+IOUTDIR    = $(strip $(OUTDIR))
+ifneq ($(words $(IOUTDIR)),1)
+	$(error OUTDIR: use only one output directory)
 endif
 
 
@@ -100,10 +100,10 @@ PTRN_OUT_NOT_CHANGED = \
 PTRN_LABEL_CHANGED = \
 	$(strip LaTeX Warning: Label\(s\) may have changed\. Rerun to get cross-references right\.)
 
-PTRN_BIBILATEX_WARNING = $(strip .*Please rerun LaTeX\.)
+PTRN_BIBLATEX_WARNING = $(strip .*Please rerun LaTeX\.)
 
 ILATEX_RERUN_CHECK = \
-	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBILATEX_WARNING)) )
+	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBLATEX_WARNING)) )
 
 endif
 
@@ -148,10 +148,10 @@ PTRN_OUT_NOT_CHANGED = \
 PTRN_LABEL_CHANGED = \
 	$(strip LaTeX Warning: Label\(s\) may have changed\. Rerun to get cross-references right\.)
 
-PTRN_BIBILATEX_WARNING = $(strip .*Please rerun LaTeX\.)
+PTRN_BIBLATEX_WARNING = $(strip .*Please rerun LaTeX\.)
 
 ILATEX_RERUN_CHECK = \
-	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBILATEX_WARNING)) )
+	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBLATEX_WARNING)) )
 
 endif
 
@@ -228,7 +228,7 @@ endef
 
 BIBER = biber
 BIBER_OPT = --output_safechars --output_directory $(IOUTDIR)
-BIBER_BIBILATEX_WARNING = Please \(re\)run Biber# TODO | Works with biblatex
+BIBER_BIBLATEX_WARNING = Please \(re\)run Biber# TODO | Works with biblatex
 
 ifneq ($(strip $(BIBER)),)
 
@@ -244,11 +244,11 @@ endef
 
 endif
 
-CHECK_BIBER = $(TEXLOG_GREP) '($(BIBER_BIBILATEX_WARNING))'
+CHECK_BIBER = $(TEXLOG_GREP) '($(BIBER_BIBLATEX_WARNING))'
 
 # %(1): path to document without extension
 define run-biber-if-necessary
-egrep '($(BIBER_BIBILATEX_WARNING))' $(call logfile,$(1));\
+egrep '($(BIBER_BIBLATEX_WARNING))' $(call logfile,$(1));\
 if [ $$? -eq 0 ];\
 then \
 	echo "==> BibLaTeX/Biber was used."; \
