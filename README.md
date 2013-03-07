@@ -4,8 +4,8 @@ htwdd-sensornetze-latex
 In der Hochschule für Technik und Wirtschaft Dresden im Master Angewandte
 Informationstechnologien wurden zwei Module zum Thema Sensornetze behandelt:
 
-[x] Forschungsprojekt/-seminar Sensornetze
-[x] Vorlesung Sensornetze
+- Forschungsprojekt/-seminar Sensornetze
+- Vorlesung Sensornetze
 
 
 Vorlesung Sensornetze
@@ -38,20 +38,20 @@ Dabei sind für die Konzipierung im Rahmen unseres
 Forschungsprojektes die folgenden Zielstellungen erarbeitet
 worden:
 
-[x] Es sollen nur quelloffene und freie Module verwendet
-    werden. Dabei ist „frei“ im Sinne der Definition der Free
-    Software Foundation zu sehen.
-[x] Das Nutzen existierender, energieeffizienter Standardtechnologien bilden
-    die Grundlage für die Interoperabilität (Herstellerunabhängigkeit)
-    sowie die Langlebigkeit batteriebetriebener Sensorknoten.
-[x] Die Erweiterbarkeit des Hausautomatisierungssystems
-    und damit die Integration anderer -- auch proprietärer
-    -- Sensornetze ist zu untersuchen.
-[x] Es ist wünschenswert, dass neue Geräte sich möglichst
-    automatisch im System anmelden. Der Ausfall einzelner
-    Sensorknoten darf das System nicht gefährden. Somit ist
-    eine Skalierbarkeit des Hausautomatisierungssystems von
-    Nöten.
+- Es sollen nur quelloffene und freie Module verwendet
+  werden. Dabei ist „frei“ im Sinne der Definition der Free
+  Software Foundation zu sehen.
+- Das Nutzen existierender, energieeffizienter Standardtechnologien bilden
+  die Grundlage für die Interoperabilität (Herstellerunabhängigkeit)
+  sowie die Langlebigkeit batteriebetriebener Sensorknoten.
+- Die Erweiterbarkeit des Hausautomatisierungssystems
+  und damit die Integration anderer -- auch proprietärer
+  -- Sensornetze ist zu untersuchen.
+- Es ist wünschenswert, dass neue Geräte sich möglichst
+  automatisch im System anmelden. Der Ausfall einzelner
+  Sensorknoten darf das System nicht gefährden. Somit ist
+  eine Skalierbarkeit des Hausautomatisierungssystems von
+  Nöten.
 
 
 Projektanatz:
