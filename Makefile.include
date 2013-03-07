@@ -451,11 +451,12 @@ ITARGET_TMP  += $(foreach suff,$(TMP_SUFFIXES), $(ITARGET_AUX:.aux=$(suff)))
 
 clean:
 	@-rm -f $(ITARGET_TMP) $(SUBITARGET_TMP)
-	@-if test -d $(IOUTDIR); then rmdir --ignore-fail-on-non-empty $(IOUTDIR); fi
+	@-if test -d $(IOUTDIR); then rmdir --parents --ignore-fail-on-non-empty $(IOUTDIR); fi
 .PHONY: clean
 
 distclean: clean
 	@-rm -f $(ITARGET_OUT)
+	@-if test -d $(IOUTDIR); then rmdir --parents --ignore-fail-on-non-empty $(IOUTDIR); fi
 	@-if test -d $(IOUTDIR); then rmdir $(IOUTDIR); fi
 .PHONY: distclean
 
