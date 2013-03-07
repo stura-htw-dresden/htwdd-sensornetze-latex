@@ -2,7 +2,7 @@ htwdd-sensornetze-latex
 =======================
 
 In der Hochschule für Technik und Wirtschaft Dresden im Master Angewandte
-Informationstechnologien wurden zwei Module zum Thema Sensornetze behandelt:
+Informationstechnologien wurden zwei Module zum Thema ''Sensornetze'' behandelt:
 
 - Forschungsprojekt/-seminar Sensornetze
 - Vorlesung Sensornetze
