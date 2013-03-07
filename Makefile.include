@@ -1,25 +1,52 @@
 #=============================================================
-# Makefile LaTeX (luaLaTeX)
+# Makefile LaTeX
 #=============================================================
 # Author: Angelos Drossos
 # (c) 2013, GPLv3
 #=============================================================
+
+#=============================================================
+# Required variables from Makefile:
+#=============================================================
+
+# latex engine: pdflatex or lualatex
+#     LATEX
+
+# name of latex main document (only one document allowed, no subdirectories!)
+#     TARGET
+
+# generate 'pdf' or 'dvi' file
+#     OUTFORMAT
+
+# directory for <TARGET>.<IOUTFORMAT>, <TARGET>.aux,
+# and other compilation files
+#     OUTDIR
+
+#=============================================================
 #=== change nothing after this hint ==========================
 #=============================================================
 
-# Required variables from Makefile:
+# test configuration variables
 
-# latex engine: pdflatex or lualatex
-ILATEX     = $(strip $(LATEX))
+IILATEX     = $(strip $(LATEX))
+ifneq ($(words $(IILATEX),1)
+	$(error ILATEX: use 'pdflatex' or 'lualatex'!)
+endif
 
-# name of latex main document (only one document allowed, no subdirectories!)
 ITARGET    = $(strip $(TARGET))
+ifneq ($(words $(ITARGET),1)
+	$(error TARGET: use only one main latex document!)
+endif
 
-# generate 'pdf' or 'dvi' file
-IOUTFORMAT = $(strip $(OUTFORMAT))
+IIOUTFORMAT = $(strip $(OUTFORMAT))
+ifneq ($(words $(IIOUTFORMAT),1)
+	$(error IOUTFORMAT: use 'pdf' or 'dvi'!)
+endif
 
-# directory for <TARGET>.<OUTFORMAT>, <TARGET>.aux, and other compilation files
-IOUTDIR    = $(strip $(OUTDIR))
+IIOUTDIR    = $(strip $(OUTDIR))
+ifneq ($(words $(IIOUTDIR),1)
+	$(error IOUTDIR: use only one output directory)
+endif
 
 
 #=============================================================
@@ -36,14 +63,14 @@ endef
 # pdflatex engine commands
 #--------------------------------------------------
 
-ifeq ($(strip $(LATEX)),pdflatex)
+ifeq ($(ILATEX),pdflatex)
 # options are only inside this if-endif allowed
 
 # $(1): filename
 define latex-base-cmd
-$(LATEX) \
-	-output-directory=$(OUTDIR) \
-	-output-format=$(OUTFORMAT) \
+$(ILATEX) \
+	-output-directory=$(IOUTDIR) \
+	-output-format=$(IOUTFORMAT) \
 	-halt-on-error \
 	$(1)
 endef
@@ -73,10 +100,10 @@ PTRN_OUT_NOT_CHANGED = \
 PTRN_LABEL_CHANGED = \
 	$(strip LaTeX Warning: Label\(s\) may have changed\. Rerun to get cross-references right\.)
 
-PTRN_BIBLATEX_WARNING = $(strip .*Please rerun LaTeX\.)
+PTRN_BIBILATEX_WARNING = $(strip .*Please rerun LaTeX\.)
 
-LATEX_RERUN_CHECK = \
-	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBLATEX_WARNING)) )
+ILATEX_RERUN_CHECK = \
+	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBILATEX_WARNING)) )
 
 endif
 
@@ -84,14 +111,14 @@ endif
 # lualatex engine commands
 #--------------------------------------------------
 
-ifeq ($(strip $(LATEX)),lualatex)
+ifeq ($(ILATEX),lualatex)
 # options are only inside this if-endif allowed
 
 # $(1): filename
 define latex-base-cmd
-$(LATEX) \
-	--output-directory=$(OUTDIR) \
-	--output-format=$(OUTFORMAT) \
+$(ILATEX) \
+	--output-directory=$(IOUTDIR) \
+	--output-format=$(IOUTFORMAT) \
 	$(1)
 endef
 
@@ -121,10 +148,10 @@ PTRN_OUT_NOT_CHANGED = \
 PTRN_LABEL_CHANGED = \
 	$(strip LaTeX Warning: Label\(s\) may have changed\. Rerun to get cross-references right\.)
 
-PTRN_BIBLATEX_WARNING = $(strip .*Please rerun LaTeX\.)
+PTRN_BIBILATEX_WARNING = $(strip .*Please rerun LaTeX\.)
 
-LATEX_RERUN_CHECK = \
-	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBLATEX_WARNING)) )
+ILATEX_RERUN_CHECK = \
+	$(strip ($(PTRN_OUT_CHANGED))|($(PTRN_LABEL_CHANGED))|($(PTRN_BIBILATEX_WARNING)) )
 
 endif
 
@@ -145,7 +172,7 @@ define create-output-dir
 endef
 
 define logfile
-$(foreach file,$(1),$(OUTDIR)/$(file).log)
+$(foreach file,$(1),$(IOUTDIR)/$(file).log)
 endef
 
 #--------------------------------------------------
@@ -153,11 +180,11 @@ endef
 #--------------------------------------------------
 
 # Extract directories and create output variables
-TARGETS_FILE   := $(call extract-rel-path,$(TARGETS))
-TARGETS_OUT    := $(foreach document,$(TARGETS_FILE),$(OUTDIR)/$(document).$(OUTFORMAT))
-TARGETS_AUX    := $(foreach document,$(TARGETS_FILE),$(OUTDIR)/$(document).aux)
-TARGETS_LOG    := $(foreach document,$(TARGETS_FILE),$(OUTDIR)/$(document).log)
-TARGETS_DEPEND := $(foreach document,$(TARGETS_FILE),$(OUTDIR)/$(document).depend)
+ITARGET_FILE   := $(call extract-rel-path,$(ITARGET))
+ITARGET_OUT    := $(foreach document,$(ITARGET_FILE),$(IOUTDIR)/$(document).$(IOUTFORMAT))
+ITARGET_AUX    := $(foreach document,$(ITARGET_FILE),$(IOUTDIR)/$(document).aux)
+ITARGET_LOG    := $(foreach document,$(ITARGET_FILE),$(IOUTDIR)/$(document).log)
+ITARGET_DEPEND := $(foreach document,$(ITARGET_FILE),$(IOUTDIR)/$(document).depend)
 
 #--------------------------------------------------
 # Check and run latex in a loop (if necessary)
@@ -165,12 +192,12 @@ TARGETS_DEPEND := $(foreach document,$(TARGETS_FILE),$(OUTDIR)/$(document).depen
 
 # $(1) = logfile
 define check-latex-rerun
-$(TEXLOG_GREP) -c -e "$(LATEX_RERUN_CHECK)" $(1)
+$(TEXLOG_GREP) -c -e "$(ILATEX_RERUN_CHECK)" $(1)
 endef
 
 # $(1) = logfile
 define check-latex-rerun-print
-$(TEXLOG_GREP) -e "$(LATEX_RERUN_CHECK)" $(1)
+$(TEXLOG_GREP) -e "$(ILATEX_RERUN_CHECK)" $(1)
 endef
 
 # $(1) = texfile
@@ -200,8 +227,8 @@ endef
 # BibLaTeX
 
 BIBER = biber
-BIBER_OPT = --output_safechars --output_directory $(OUTDIR)
-BIBER_BIBLATEX_WARNING = Please \(re\)run Biber# TODO | Works with biblatex
+BIBER_OPT = --output_safechars --output_directory $(IOUTDIR)
+BIBER_BIBILATEX_WARNING = Please \(re\)run Biber# TODO | Works with biblatex
 
 ifneq ($(strip $(BIBER)),)
 
@@ -217,11 +244,11 @@ endef
 
 endif
 
-CHECK_BIBER = $(TEXLOG_GREP) '($(BIBER_BIBLATEX_WARNING))'
+CHECK_BIBER = $(TEXLOG_GREP) '($(BIBER_BIBILATEX_WARNING))'
 
 # %(1): path to document without extension
 define run-biber-if-necessary
-egrep '($(BIBER_BIBLATEX_WARNING))' $(call logfile,$(1));\
+egrep '($(BIBER_BIBILATEX_WARNING))' $(call logfile,$(1));\
 if [ $$? -eq 0 ];\
 then \
 	echo "==> BibLaTeX/Biber was used."; \
@@ -302,9 +329,9 @@ endef
 NODEP_RULES = show clean distclean
 
 ifneq ($(filter-out $(NODEP_RULES),$(MAKECMDGOALS)),)
-TARGETS_DEPEND_EXIST = $(wildcard $(TARGETS_DEPEND))
-ifneq ($(TARGETS_DEPEND_EXIST),)
--include $(TARGETS_DEPEND_EXIST)
+ITARGET_DEPEND_EXIST = $(wildcard $(ITARGET_DEPEND))
+ifneq ($(ITARGET_DEPEND_EXIST),)
+-include $(ITARGET_DEPEND_EXIST)
 endif
 endif
 
@@ -317,25 +344,25 @@ endif
 define compile_latex_draft
 
 # get depency list for tex-file
-$(OUTDIR)/$(1)%.depend: $(1)%.tex
+$(IOUTDIR)/$(1)%.depend: $(1)%.tex
 	@echo "Create depend file for: $$<"
 	@$$(call create-output-dir,$$(@D))
 	@echo "$(1)$$*.tex: $$(addprefix $(1),$$(call get-main-document-depends,$(1)$$*.tex))"
 	@echo "$(1)$$*.tex: $$(addprefix $(1),$$(call get-main-document-depends,$(1)$$*.tex))" > $$@
 
-$(OUTDIR)/$(1)%.aux: $(1)%.tex $(OUTDIR)/$(1)%.depend always
+$(IOUTDIR)/$(1)%.aux: $(1)%.tex $(IOUTDIR)/$(1)%.depend always
 	@$$(call echo-compiling-latex,$$<,"draft")
 	@$$(call create-output-dir,$$(@D))
 	@$$(call check-main-document,$(1)$$*.tex)
 	@$$(call latex-draft-cmd,$(1)$$*)
 	@$$(call run-biber-if-necessary,$(1)$$*)
 
-$(OUTDIR)/$(1)%.$(OUTFORMAT): $(1)%.tex $(OUTDIR)/$(1)%.aux always
+$(IOUTDIR)/$(1)%.$(IOUTFORMAT): $(1)%.tex $(IOUTDIR)/$(1)%.aux always
 	@$$(call echo-compiling-latex,$$<,"final")
 	@$$(call latex-final-cmd,$(1)$$*)
-	@$$(call latex-final-loop,$(1)$$*,$(OUTDIR)/$(1)$$*.log)
+	@$$(call latex-final-loop,$(1)$$*,$(IOUTDIR)/$(1)$$*.log)
 
-$(OUTDIR)/$(1)%.log: always
+$(IOUTDIR)/$(1)%.log: always
 	@echo "Check '$(1)$$*' log files:"
 	@$$(call check-latex-rerun-print,$$@)
 
@@ -356,21 +383,21 @@ all: build
 #--------------------------------------------------
 
 show:
-	@echo "LaTeX Engine:   $(LATEX)"
-	@echo "OutFormat:      $(OUTFORMAT)"
-	@echo "OutDIR:         $(OUTDIR)"
-	@echo "Targets_File:   $(TARGETS_FILE)"
-	@echo "Targets_Out:    $(TARGETS_OUT)"
-	@echo "Targets_Aux:    $(TARGETS_AUX)"
-	@echo "Targets_Log:    $(call logfile,$(TARGETS_FILE))"
-	@echo "Targets_Depend: $(TARGETS_AUX:.aux=.depend)"
-	@echo "Targets_DIRs:   $(sort $(dir $(TARGETS)))"
+	@echo "LaTeX Engine:   $(ILATEX)"
+	@echo "OutFormat:      $(IOUTFORMAT)"
+	@echo "OutDIR:         $(IOUTDIR)"
+	@echo "Targets_File:   $(ITARGET_FILE)"
+	@echo "Targets_Out:    $(ITARGET_OUT)"
+	@echo "Targets_Aux:    $(ITARGET_AUX)"
+	@echo "Targets_Log:    $(call logfile,$(ITARGET_FILE))"
+	@echo "Targets_Depend: $(ITARGET_AUX:.aux=.depend)"
+	@echo "Targets_DIRs:   $(sort $(dir $(ITARGET)))"
 	@echo ""
 	@echo "Targets_TMPs:"
-	@echo "$(TARGETS_TMP)"
+	@echo "$(ITARGET_TMP)"
 	@echo ""
 	@echo "SubTargets_TMPs:"
-	@echo "$(SUBTARGETS_TMP)"
+	@echo "$(SUBITARGET_TMP)"
 	@echo ""
 	@echo "Biber Command:  $(CHECK_BIBER) $(call logfile, document)"
 .PHONY: show
@@ -379,10 +406,10 @@ show:
 # make depend
 #--------------------------------------------------
 
-depend: $(TARGETS_DEPEND)
+depend: $(ITARGET_DEPEND)
 .PHONY: depend
 
-log: $(TARGETS_LOG)
+log: $(ITARGET_LOG)
 .PHONY: log
 
 #--------------------------------------------------
@@ -390,18 +417,18 @@ log: $(TARGETS_LOG)
 #--------------------------------------------------
 
 # create pattern rules for every target-directory
-#$(foreach directory,$(sort $(dir $(TARGETS))),$(info $(call compile_latex_draft,$(directory)))) #DEBUG
-$(foreach directory,$(sort $(dir $(TARGETS))),$(eval $(call compile_latex_draft,$(directory))))
+#$(foreach directory,$(sort $(dir $(ITARGET))),$(info $(call compile_latex_draft,$(directory)))) #DEBUG
+$(foreach directory,$(sort $(dir $(ITARGET))),$(eval $(call compile_latex_draft,$(directory))))
 
 
 #--------------------------------------------------
 # make build / draft
 #--------------------------------------------------
 
-build: $(TARGETS_OUT)
+build: $(ITARGET_OUT)
 .PHONY: build
 
-draft: $(TARGETS_AUX)
+draft: $(ITARGET_AUX)
 .PHONY: draft
 
 #--------------------------------------------------
@@ -416,20 +443,20 @@ TMP_SUFFIXES += .idx .ilg .ind .lof
 TMP_SUFFIXES += .lol .lot .nav
 TMP_SUFFIXES += .snm .toc .vrb
 TMP_SUFFIXES += .bcf .run.xml .blg .bbl    # biber tmp files
-TARGETS_TMP  += $(foreach suff,$(TMP_SUFFIXES), $(TARGETS_AUX:.aux=$(suff)))
+ITARGET_TMP  += $(foreach suff,$(TMP_SUFFIXES), $(ITARGET_AUX:.aux=$(suff)))
 
 # tmp files for depencies like \inluce{file}
-#SUBTARGETS_FILE = $(foreach document,$(TARGETS_FILE:=.tex), $(call get-main-document-depends,$(document)))
-#SUBTARGETS_TMP  = $(foreach suff, $(TMP_SUFFIXES), $(addprefix $(OUTDIR)/,$(SUBTARGETS_FILE:.tex=$(suff))))
+#SUBITARGET_FILE = $(foreach document,$(ITARGET_FILE:=.tex), $(call get-main-document-depends,$(document)))
+#SUBITARGET_TMP  = $(foreach suff, $(TMP_SUFFIXES), $(addprefix $(IOUTDIR)/,$(SUBITARGET_FILE:.tex=$(suff))))
 
 clean:
-	@-rm -f $(TARGETS_TMP) $(SUBTARGETS_TMP)
-	@-if test -d $(OUTDIR); then rmdir --ignore-fail-on-non-empty $(OUTDIR); fi
+	@-rm -f $(ITARGET_TMP) $(SUBITARGET_TMP)
+	@-if test -d $(IOUTDIR); then rmdir --ignore-fail-on-non-empty $(IOUTDIR); fi
 .PHONY: clean
 
 distclean: clean
-	@-rm -f $(TARGETS_OUT)
-	@-if test -d $(OUTDIR); then rmdir $(OUTDIR); fi
+	@-rm -f $(ITARGET_OUT)
+	@-if test -d $(IOUTDIR); then rmdir $(IOUTDIR); fi
 .PHONY: distclean
 
 #--------------------------------------------------
@@ -440,7 +467,7 @@ ifndef PDFVIEWER
 PDFVIEWER = evince
 endif
 
-#run: $(TARGETS_AUX:.aux=.pdf)
+#run: $(ITARGET_AUX:.aux=.pdf)
 run:
-	$(foreach document,$(TARGETS_AUX:.aux=.pdf),$(PDFVIEWER) $(document) > /dev/null 2> /dev/null &)
+	$(foreach document,$(ITARGET_AUX:.aux=.pdf),$(PDFVIEWER) $(document) > /dev/null 2> /dev/null &)
 .PHONY: run
