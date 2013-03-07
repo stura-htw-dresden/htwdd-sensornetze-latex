@@ -43,6 +43,7 @@ define latex-base-cmd
 $(LATEX) \
 	-output-directory=$(OUTDIR) \
 	-output-format=$(OUTFORMAT) \
+	-halt-on-error \
 	$(1)
 endef
 
@@ -53,7 +54,7 @@ endef
 
 # $(1): filename
 define latex-draft-cmd
-$(call latex-base-cmd, -interaction=batchmode -draftmode $(1))
+$(call latex-base-cmd, -interaction=errorstopmode -draftmode $(1))
 endef
 
 # $(1): filename
