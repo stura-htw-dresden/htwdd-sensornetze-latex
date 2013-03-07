@@ -4,23 +4,24 @@
 # Author: Angelos Drossos
 # (c) 2013, GPLv3
 #=============================================================
-
-# Configuration
-
-LATEX = pdflatex	# latex engine: pdflatex or lualatex
-
-OUTFORMAT = pdf#	# generate pdf or dvi
-OUTDIR = aux#		# directory for <DOCUMENT>.pdf or <DOCUMENT>.dvi
-			# and <DOCUMENT>.aux
-			# and other files created by compiling a latex document
-# the '#' after the above variables is important!
-
-# all targets (main document)
-TARGETS += forschungsprojekt/paper-sensoransteuerung/fp_paper_sensoransteuerung
-
-
-#=============================================================
 #=== change nothing after this hint ==========================
+#=============================================================
+
+# Required variables from Makefile:
+
+# latex engine: pdflatex or lualatex
+ILATEX     = $(strip $(LATEX))
+
+# name of latex main document (only one document allowed, no subdirectories!)
+ITARGET    = $(strip $(TARGET))
+
+# generate 'pdf' or 'dvi' file
+IOUTFORMAT = $(strip $(OUTFORMAT))
+
+# directory for <TARGET>.<OUTFORMAT>, <TARGET>.aux, and other compilation files
+IOUTDIR    = $(strip $(OUTDIR))
+
+
 #=============================================================
 
 # $(1) = filename
