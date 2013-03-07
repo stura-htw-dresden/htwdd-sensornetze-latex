@@ -1,0 +1,71 @@
+PREFIX = $HOME/local
+PREFIX_AVR = $HOME/local/avr
+PATH = $PATH:$PREFIX/bin:$PREFIX_AVR/bin
+LD_LIBRARY_PATH = $PREFIX/lib:$LD_LIBRARY_PATH
+
+(avr-)binutils:
+cd binutils-XXX
+mkdir obj-avr; cd obj-avr
+../configure --prefix=$PREFIX_AVR --target=avr --disable-nls
+make
+make install
+
+
+gmp:
+cd gmp-XXX
+mkdir obj-native; cd obj-native
+../configure --prefix=$PREFIX
+make
+make check
+make install
+
+mpfr: depends on gmp
+cd mpfr-XXX
+mkdir obj-native; cd obj-native
+../configure --prefix=$PREFIX --with-gmp=$PREFIX
+make
+make check
+make install
+
+mpc: depends on gmp, mpfr
+cd mpc-XXX
+mkdir obj-native; cd obj-native
+../configure --prefix=$PREFIX --with-gmp=$PREFIX --with-mpfr=$PREFIX
+make
+make check
+make install
+
+(avr-)gcc: depends on gmp, mpfr, mpc
+cd gcc-XXX
+mkdir obj-avr; cd obj-avr
+../configure --prefix=/home/student/local/avr --target=avr --enable-languages=c,c++ --disable-nls --disable-libssp --with-dwarf2 --with-gmp=/home/student/local --with-mpfr=/home/student/local --with-mpc=/home/student/local
+make
+make install
+
+avr-libc: depends on (avr-)binutils, (avr-)gcc
+cd avr-libc-XXX
+mkdir obj-avr; cd obj-avr
+../configure --$PREFIX_AVR --`../config.guess` --host=avr
+make
+make install
+
+bison:
+cd bison-XXX (bison-2.4.3)
+mkdir obj-native; cd obj-native
+../configure --prefix=$PREFIX
+make
+make install
+
+flex:
+cd flex-XXX
+mkdir obj-native; cd obj-native
+../configure --prefix=$PREFIX
+make
+make install
+
+avrdude: bison flex
+cd avrdude-XXX
+mkdir obj-native; cd obj-native
+../configure --prefix=$PREFIX
+make
+make install
