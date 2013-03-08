@@ -9,6 +9,9 @@
 # --> look into these target directories and execute the Makefile
 TARGETDIRS += forschungsprojekt/paper-sensoransteuerung
 TARGETDIRS += forschungsprojekt/abschlussvortrag
+TARGETDIRS += forschungsprojekt/zwischenvortrag
+TARGETDIRS += vorlesung/contiki/paper
+TARGETDIRS += vorlesung/contiki/vortrag
 
 
 #=============================================================

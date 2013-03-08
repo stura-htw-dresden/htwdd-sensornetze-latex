@@ -16,9 +16,9 @@ LATEX = pdflatex
 
 OUTFORMAT = pdf
 
-TARGET = fp_paper_sensoransteuerung
+TARGET = vortrag_sn
 
-OUTDIR = $(MAIN_MAKEFILE)/aux/forschungsprojekt/paper_sensoransteuerung
+OUTDIR = $(MAIN_MAKEFILE)/aux/forschungsprojekt/abschlussvortrag
 
 
 #=============================================================

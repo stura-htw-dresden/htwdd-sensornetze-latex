@@ -6,7 +6,7 @@
 #=============================================================
 
 # (relative) PATH to Main Makefile
-MAIN_MAKEFILE = ../..
+MAIN_MAKEFILE = ../../..
 
 #=============================================================
 # Configuration
@@ -16,9 +16,9 @@ LATEX = pdflatex
 
 OUTFORMAT = pdf
 
-TARGET = fp_paper_sensoransteuerung
+TARGET = contiki_paper
 
-OUTDIR = $(MAIN_MAKEFILE)/aux/forschungsprojekt/paper_sensoransteuerung
+OUTDIR = $(MAIN_MAKEFILE)/aux/vorlesung/contiki_paper
 
 
 #=============================================================
