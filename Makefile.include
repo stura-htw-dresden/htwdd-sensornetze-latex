@@ -77,12 +77,12 @@ endef
 
 # $(1): filename
 define latex-final-cmd
-$(call latex-base-cmd, -interaction=errorstopmode $(1))
+$(call latex-base-cmd, -interaction=batchmode $(1))
 endef
 
 # $(1): filename
 define latex-draft-cmd
-$(call latex-base-cmd, -interaction=errorstopmode -draftmode $(1))
+$(call latex-base-cmd, -interaction=batchmode -draftmode $(1))
 endef
 
 # $(1): filename
