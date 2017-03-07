@@ -1,15 +1,17 @@
-htwdd-sensornetze-latex
-=======================
+## Disclaimer
+
+Dieser Fork dient im Wesentlichen als Referenz für das [HTW Dresden Beamer Template](https://github.com/stura-htw-dresden/LaTeX-Beamer-Template-HTWDD/blob/master/README.markdown); es wird gebeten nicht auf das Modul Sensornetze bezogene Verbesserungen dort einzubringen und Beiträge zum Thema Sensornetze upstream beizusteuern.
+
+# htwdd-sensornetze-latex
 
 In der Hochschule für Technik und Wirtschaft Dresden im Master Angewandte
-Informationstechnologien wurden zwei Module zum Thema ''Sensornetze'' behandelt:
+Informationstechnologien wurden zwei Module zum Thema *Sensornetze* behandelt:
 
 - Forschungsprojekt/-seminar Sensornetze
 - Vorlesung Sensornetze
 
 
-Vorlesung Sensornetze
----------------------
+## Vorlesung Sensornetze
 
 In der Vorlesung wurden Themen verteilt, die als Vortrag und auch schriiftlich
 ausgearbeitet werden sollten.
@@ -24,10 +26,9 @@ bis zur Netzwerk-Schicht) gelegt. Im Vortrag wurde am Rande auch das Laden von
 Modulen zur Laufzeit (dynamic module loading) behandelt.
 
 
-Forschungsprojekt Sensornetze
------------------------------
+## Forschungsprojekt Sensornetze
 
-Projektziele:
+### Projektziele
 
 Im Rahmen des Forschungsprojektes soll
 überprüft werden, inwiefern eine offene/freie Heimautomatisierung
@@ -45,8 +46,8 @@ worden:
   die Grundlage für die Interoperabilität (Herstellerunabhängigkeit)
   sowie die Langlebigkeit batteriebetriebener Sensorknoten.
 - Die Erweiterbarkeit des Hausautomatisierungssystems
-  und damit die Integration anderer -- auch proprietärer
-  -- Sensornetze ist zu untersuchen.
+  und damit die Integration anderer – auch proprietärer
+  – Sensornetze ist zu untersuchen.
 - Es ist wünschenswert, dass neue Geräte sich möglichst
   automatisch im System anmelden. Der Ausfall einzelner
   Sensorknoten darf das System nicht gefährden. Somit ist
@@ -54,7 +55,7 @@ worden:
   Nöten.
 
 
-Projektanatz:
+### Projektansatz
 
 Die konkret untersuchte Hausautomatisierungslösung besteht
 aus einem dedizierten Netzknoten (Server), der die Regelung
@@ -77,8 +78,8 @@ zwischen dem entsprechenden Sensornetzprotokoll und CoAP
 durchführen.
 
 
-Repository:
+### Repository
 
 In diesem Repository sind die letzten zwei Vorträge zum Forschungsprojekt
-sowie zum Teilprojekt ''Sensoransteuerung'', bearbeitet von Angelos Drossos
+sowie zum Teilprojekt *Sensoransteuerung*, bearbeitet von Angelos Drossos
 sowie Hermann Lorenz, die Ausarbeitung zu finden.
